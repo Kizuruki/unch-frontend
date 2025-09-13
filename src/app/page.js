@@ -1,103 +1,146 @@
-import Image from "next/image";
+"use client";
+import { useState, useEffect, useMemo } from "react";
+import "./page.css"
+import Link from "next/link";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("newest");
+
+  const handleSearch = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // const res = await fetch("https://pjsk-search-backend-production.up.railway.app/levels/?q=&min=1&max=37");
+      const res = await fetch("https://sonolus.untitledcharts.com/sonolus/levels/list/");
+      if (!res.ok) throw new Error(`Network error: ${res.status}`);
+      const data = await res.json();
+
+      const BASE = "https://sonolus.untitledcharts.com";
+      const items = Array.isArray(data?.items) ? data.items : [];
+
+      const normalized = items.map((item) => ({
+        id: item.name,
+        title: item.title,
+        artists: item.artists,
+        author: item.author,
+        rating: item.rating,
+        coverUrl: item.cover ? BASE + item.cover.url : "",
+        bgmUrl: item.bgm ? BASE + item.bgm.url : "",
+      }));
+
+      
+      setPosts(normalized);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }  
+  };
+
+  useEffect(() => {
+    handleSearch();
+  }, []);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return posts;
+    return posts.filter((p) =>
+    [p.title, p.artists, p.author].some((field) => 
+    field?.toLowerCase().includes(q)
+  )
+  );
+  }, [posts, query]);
+
+    const visiblePosts = useMemo(() => {
+    const arr = [...filtered];
+    if (sort === "newest") {
+      arr.sort((a, b) => a.order - b.order);
+    } else if (sort === "abc") {
+      arr.sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }));
+    } else if (sort === "level-asc") {
+      arr.sort((a, b) => a.rating - b.rating);
+    }
+    return arr;
+  }, [filtered, sort]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  return (
+    <div >
+      <main>
+        
+
+        <div className="songcontainer">
+          <div className="searchContainer">
+            <input
+            className="search-bar"
+            type="search"
+            placeholder="Search..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <fieldset className="sort-group">
+              <legend className="sr-only">Sort by</legend>
+
+              <label>
+                <input
+                  type="radio"
+                  name="sort"
+                  value="newest"
+                  checked={sort === "newest"}
+                  onChange={() => setSort("newest")}
+                  />{" "}
+                  Newest
+              </label>
+
+              <label>
+                <input
+                  type="radio"
+                  name="sort"
+                  value="abc"
+                  checked={sort === "abc"}
+                  onChange={() => setSort("abc")}
+                  />{" "}
+                  ABC
+              </label>
+
+              <label>
+                <input
+                  type="radio"
+                  name="sort"
+                  value="level-asc"
+                  checked={sort === "level-asc"}
+                  onChange={() => setSort("level-asc")}
+                  />{" "}
+                  Level
+              </label>
+            </fieldset>
+            
+          </div>
+          <ul className="songlist">
+            {visiblePosts.map((post) => (
+              <Link key={post.id} href={`/levels/${post.id}`}>
+              <li>
+                <img src={post.coverUrl} alt={post.title} />
+                <div>
+                  <span className="song-title">{post.title.length > 19 ? post.title.substring(0, 19) + "..." : post.title}</span><br />
+                  <span className="song-artist">{post.artists.length > 20 ? post.artists.substring(0, 20) + "..." : post.artists}</span><br />
+                  <span className="charter"><p>Charted by</p> <span>{post.author}</span></span><br />
+                  <span className="rating">Lv.{post.rating}</span>
+                  
+                </div>
+              </li>
+              </Link>
+            ))}
+          </ul>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }

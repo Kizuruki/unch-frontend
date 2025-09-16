@@ -3,6 +3,9 @@ import { useState, useEffect, useMemo } from "react";
 import "./page.css"
 import Link from "next/link";
 
+
+
+
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -11,17 +14,20 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("newest");
 
+  const APILink = process.env.NEXT_PUBLIC_LEVELAPI;
+
   const handleSearch = async () => {
     setLoading(true);
     setError(null);
     try {
-      // const res = await fetch("https://pjsk-search-backend-production.up.railway.app/levels/?q=&min=1&max=37");
-      const res = await fetch("https://sonolus.untitledcharts.com/sonolus/levels/list/");
+      const res = await fetch(`${APILink}/sonolus/levels/list/`);
       if (!res.ok) throw new Error(`Network error: ${res.status}`);
       const data = await res.json();
 
-      const BASE = "https://sonolus.untitledcharts.com";
+      const BASE = `${APILink}`;
       const items = Array.isArray(data?.items) ? data.items : [];
+
+      console.log(`${APILink}`)
 
       const normalized = items.map((item) => ({
         id: item.name,
@@ -127,7 +133,7 @@ export default function Home() {
             {visiblePosts.map((post) => (
               <Link key={post.id} href={`/levels/${post.id}`}>
               <li>
-                <img src={post.coverUrl} alt={post.title} />
+                <img className="levels-img" src={post.coverUrl} alt={post.title} />
                 <div>
                   <span className="song-title">{post.title.length > 19 ? post.title.substring(0, 19) + "..." : post.title}</span><br />
                   <span className="song-artist">{post.artists.length > 20 ? post.artists.substring(0, 20) + "..." : post.artists}</span><br />

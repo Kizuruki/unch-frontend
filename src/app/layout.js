@@ -29,8 +29,10 @@ export default function RootLayout({ children }) {
       >
         <header>
           <div className="left">
+            <Link href="/">
             <img src="/636a8f1e76b38cb1b9eb0a3d88d7df6f.png" alt="UntitledCharts Logo" />
             <h2>UntitledCharts</h2>
+            </Link>
           </div>
           <NavLinks />
           <div className="right">

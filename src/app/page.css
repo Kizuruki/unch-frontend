@@ -9,7 +9,7 @@
 }
 
 .searchContainer {
-    margin-top: 100px;
+    margin-top: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -59,7 +59,7 @@
     transition: all 0.2s ease-in-out;
 }
 
-.songcontainer img {
+.songcontainer .levels-img {
     aspect-ratio: 1 / 1;
     width: 100%;
     object-fit: cover;

@@ -7,7 +7,7 @@ main {
 }
 
 .detail-container {
-    margin-top: 150px;
+    margin-top: 50px;
     background-color: #fff;
     padding: 30px;
     border-radius: 30px;
@@ -41,13 +41,13 @@ h1 {
 }
 
 .media-container {
-    margin-top: 150px;
+    margin-top: 50px;
     display: flex;
     flex-direction: column;
     align-items: end;
 }
 
-.media-container img {
+.media-container .level-detail-img {
     aspect-ratio: 1 / 1;
     width: 300px;
     border-radius: 30px;
@@ -67,7 +67,7 @@ h1 {
         width: 90%;
     }
     .media-container {
-        margin-top: 100px;
+        margin-top: 50px;
         margin-bottom: 10px;
     }
     .detail-container {

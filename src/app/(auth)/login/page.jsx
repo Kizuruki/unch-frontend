@@ -7,15 +7,18 @@ export default function Login() {
       <div className="login-container">
         <div className="login-box">
           <h1>UntitledCharts</h1>
+          <p>Login function hasn't been implemented yet (sorry)<br></br>
+          but let's pretend like the button actually does something</p>
           <form>
-            <label htmlFor="email">Email</label>
+            
+            {/* <label htmlFor="email">Email</label>
             <input type="email" id="email" name="email" required />
             <label htmlFor="password">Password</label>
-            <input type="password" id="password" name="password" required />
+            <input type="password" id="password" name="password" required /> */}
             <button type="submit" className="login-btn">Log In</button>
           </form>
           <p>
-            Don't have an account? <a href="/register"><button className="register-btn">Register</button></a>
+            Don't have an account? <span className="sucks">that sucks</span>
           </p>
         </div>
       </div>

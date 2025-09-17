@@ -2,8 +2,8 @@
 import { useState, useEffect, useMemo } from "react";
 import "./page.css"
 import Link from "next/link";
-
-
+import tempData from "./temp-data/levels.json"
+import dotenv from "dotenv";
 
 
 export default function Home() {
@@ -14,20 +14,21 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("newest");
 
-  const APILink = process.env.NEXT_PUBLIC_LEVELAPI;
-
   const handleSearch = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${APILink}/sonolus/levels/list/`);
+      const apiUrl = process.env['NEXT_PUBLIC_API_URL'];
+      // const res = await fetch(`${apiUrl}/sonolus/levels/list/`);
+      const res = await fetch(`${apiUrl}/api/charts/?type=random`);
       if (!res.ok) throw new Error(`Network error: ${res.status}`);
       const data = await res.json();
 
-      const BASE = `${APILink}`;
+      // const data = tempData;
+      const BASE = `${apiUrl}`;
       const items = Array.isArray(data?.items) ? data.items : [];
 
-      console.log(`${APILink}`)
+      // console.log(`${apiUrl}`)
 
       const normalized = items.map((item) => ({
         id: item.name,
@@ -78,7 +79,7 @@ export default function Home() {
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div >
+    <div>
       <main>
         
 

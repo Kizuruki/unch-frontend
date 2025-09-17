@@ -41,8 +41,9 @@ h1 {
 }
 
 .login-btn {
-    width: 100px;
-    height: 40px;
+    /* width: 100px; */
+    /* height: 40px; */
+    padding: 10px 20px;;
     border: none;
     border-radius: 20px;
     background-color: hsl(200, 50%, 70%);

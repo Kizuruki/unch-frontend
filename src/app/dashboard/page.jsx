@@ -3,8 +3,6 @@ import "./page.css";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-const APILink = process.env.NEXT_PUBLIC_LEVELAPI;
-
 export default function Dashboard() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -29,6 +27,7 @@ export default function Dashboard() {
     setLoading(true);
     setError(null);
     try {
+      const APILink = process.env['NEXT_PUBLIC_API_URL'];
       const res = await fetch(
         `${APILink}/sonolus/levels/list/`
       );

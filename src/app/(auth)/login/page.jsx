@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 
 export default function Login() {
   const [isWaiting, setIsWaiting] = useState(false)
+  const [idState, setIdState] = useState("")
 
   const sonolusServerUrl = process.env['NEXT_PUBLIC_SONOLUS_SERVER_URL'];
   const apiUrl = process.env['NEXT_PUBLIC_API_URL'];
@@ -15,10 +16,11 @@ export default function Login() {
     e.preventDefault()
     try {
       const apiUrlNoHTTPS = apiUrl.replace("http://", "").replace("https://", "")
+      const sonolusServerUrlNoHTTPS = sonolusServerUrl.replace("http://", "").replace("https://", "")
 
       const { id } = await (await fetch(`${apiUrl}/api/accounts/session/external/id`, { method: "POST" })).json()
-
-      window.open(`https://open.sonolus.com/external-login/${sonolusServerUrl}/sonolus/authenticate_external?id=${id}`, "_blank", "noopener,noreferrer")
+      setIdState(id)
+      window.open(`https://open.sonolus.com/external-login/${sonolusServerUrlNoHTTPS}/sonolus/authenticate_external?id=${id}`, "_blank", "noopener,noreferrer")
 
       setIsWaiting(true)
     } catch (e) {
@@ -30,7 +32,7 @@ export default function Login() {
     if (!isWaiting) return
 
     const interval = setInterval(async () => {
-      const res = await fetch(`${apiUrl}/api/accounts/session/external/get?id=${id}`)
+      const res = await fetch(`${apiUrl}/api/accounts/session/external/get?id=${idState}`)
 
       if (res.status === 202) {
         const { session_key, expiry } = await res.json()
@@ -63,9 +65,6 @@ export default function Login() {
             <input type="password" id="password" name="password" required /> */}
               <button type="submit" className="login-btn">Log In via Sonolus</button>
             </form>
-            <p>
-              Don't have an account? <span className="sucks">that sucks</span>
-            </p>
           </>)}
         </div>
       </div>

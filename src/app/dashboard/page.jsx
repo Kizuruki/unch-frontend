@@ -4,10 +4,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import ChartsList from "../../components/charts-list/ChartsList";
 import PaginationControls from "../../components/pagination-controls/PaginationControls";
 import ChartModal from "../../components/chart-modal/ChartModal";
+import { useUser } from "../../contexts/UserContext";
 
 const APILink = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Dashboard() {
+  const { sonolusUser, session } = useUser();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -39,7 +41,11 @@ export default function Dashboard() {
     setError(null);
     try {
       const res = await fetch(
-        `${APILink}/api/charts?page=${page}&type=quick`
+        `${APILink}/api/charts?page=${page}&type=advanced&status=ALL`, {
+          headers: {
+            "Authorization": `${session}`
+          }
+        }
       );
       if (!res.ok) throw new Error(`Network error: ${res.status}`);
       const data = await res.json();
@@ -57,6 +63,8 @@ export default function Dashboard() {
         tags: item.tags,
         coverUrl: item.jacket_file_hash ? `${BASE}/${item.author}/${item.id}/${item.jacket_file_hash}` : "",
         bgmUrl: item.music_file_hash ? `${BASE}/${item.author}/${item.id}/${item.music_file_hash}` : "",
+        backgroundUrl: item.background_file_hash ? `${BASE}/${item.author}/${item.id}/${item.background_file_hash}` : "",
+        chartUrl: item.chart_file_hash ? `${BASE}/${item.author}/${item.id}/${item.chart_file_hash}` : "",
         likeCount: item.like_count,
         createdAt: item.created_at,
         updatedAt: item.updated_at,
@@ -172,6 +180,7 @@ export default function Dashboard() {
               onStop={handleStop}
               onAudioRef={handleAudioRef}
               onEdit={openEdit}
+              sonolusUser={sonolusUser}
             />
           </div>
         </div>

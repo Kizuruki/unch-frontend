@@ -1,0 +1,75 @@
+/* Pagination Styles */
+.pagination-card {
+    background-color: hsl(200, 50%, 90%);
+    border-radius: 40px;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2),
+     -5px -5px 15px rgba(255, 255, 255, 0.5);
+    margin-top: 20px;
+    padding: 20px;
+    width: 100%;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.pagination-info {
+    text-align: center;
+    padding: 10px;
+    color: hsl(200, 0%, 60%);
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination-btn {
+    background-color: hsl(200, 50%, 80%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: hsl(200, 50%, 70%);
+}
+
+.pagination-btn:disabled {
+    background-color: hsl(200, 0%, 80%);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.pagination-numbers {
+    display: flex;
+    gap: 5px;
+}
+
+.pagination-number {
+    background-color: hsl(200, 50%, 90%);
+    color: hsl(200, 50%, 40%);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.pagination-number:hover {
+    background-color: hsl(200, 50%, 80%);
+    color: white;
+}
+
+.pagination-number.active {
+    background-color: hsl(200, 50%, 60%);
+    color: white;
+}

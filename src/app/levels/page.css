@@ -60,6 +60,18 @@ h1 {
     border-radius: 30px;
 }
 
+.loading-container, .error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    font-size: 18px;
+}
+
+.error-container {
+    color: #e74c3c;
+}
+
 @media (max-width: 900px) {
     main {
         flex-direction: column-reverse;

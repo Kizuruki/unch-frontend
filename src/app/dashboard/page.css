@@ -1,16 +1,19 @@
 .dashboard-container {
     width: 100%;
-    height: 600px;
+    min-height: 800px;
     display: flex;
-    justify-content: space-evenly;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
     margin-top: 20px;
+    gap: 20px;
 }
 
 .my-charts {
-    height: 100%;
+    height: 80vh;
+    min-height: 700px;
     overflow: auto;
-    width: 50%;
+    width: 100%;
+    max-width: 1000px;
     position: relative;
     background-color: hsl(200, 50%, 90%);
     border-radius: 40px;
@@ -21,7 +24,7 @@
 .upload-section {
     position: sticky;
     top: 0;
-    height: 20px;
+    min-height: 80px;
     background-color: rgba(255, 255, 255, 0.5);
     width: 100%;
     padding: 30px;
@@ -53,104 +56,36 @@
     display:flex;
     width: 100%;
     justify-content: center;
+    padding: 20px;
 }
+
 
 .my-charts::-webkit-scrollbar {
     display: none;
 }
 
-.songlist {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    width:100%;
-}
-
-.songlist .dashboard-li {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    background-color: white;
-    margin: 10px 0px;
-    width: 90%;
-    border-radius: 20px;
-    box-shadow:2px 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.song-info {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-}
-
-.songlist .dashboard-img {
-    aspect-ratio: 1/1 ;
-    height: 60px;
-    border-radius: 15px;
-    margin: 5px;
-}
-
-.song-title-dashboard {
-    align-self:center;
-    margin-right: 80px;
-    font-weight: 600;
-}
-
-.rating-dashboard {
-    align-self: center;
-    margin-right: 20px;
-    font-size: 12px;
-    color: hsl(200, 0%, 60%)
-}
-
-.delete-btn {
-    background-color: hsl(0, 50%, 80%);
-    margin: 5px;
-    padding: 10px 5px;
-    border-radius: 20px;
-    color: hsl(200, 0%, 20%);
-}
-
-.edit-btn {
-    background-color: hsl(200, 50%, 80%);
-    margin: 5px;
-    padding: 15px 15px;
-    border-radius: 20px;
-    color: #fff;
+/* Responsive Design */
+@media (max-width: 768px) {
+    .my-charts {
+        height: 70vh;
+        min-height: 500px;
+        max-width: 95%;
+    }
+    
+    .dashboard-container {
+        min-height: 600px;
+        gap: 15px;
+    }
+    
+    .upload-section {
+        padding: 20px;
+        min-height: 60px;
+    }
+    
+    .upload-section h2 {
+        font-size: 28px;
+        margin-right: 20px;
+    }
 }
 
 
-.edit-container {
-    height: 100%;
-    width: 30%;
-    background-color: white;
-    border-radius: 40px;
-    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2),
-     -5px -5px 15px rgba(255, 255, 255, 0.3);
-     /* display:none; */
-}
-
-.meta-form {
-    border: 1px solid black;
-    width: 80%;
-    justify-self: center;
-}
-
-.meta-form form {
-    display: flex;
-    flex-direction: column;
-}
-
-.meta-form input { 
-    color: grey;
-    background-color: hsl(200, 50%, 80%);
-}
-
-.edit-container {
-    display: none;
-}
-
-.edit-container.open {
-    display: block;
-}

@@ -40,6 +40,33 @@
     position: relative;
 }
 
+/* Background overlay for better text contrast */
+.songlist .dashboard-li::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.85) 0%,
+        rgba(255, 255, 255, 0.75) 30%,
+        rgba(255, 255, 255, 0.65) 70%,
+        rgba(255, 255, 255, 0.8) 100%
+    );
+    backdrop-filter: blur(2px);
+    border-radius: 20px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Ensure content is above the overlay */
+.songlist .dashboard-li > * {
+    position: relative;
+    z-index: 2;
+}
+
 .songlist .dashboard-li:hover {
     transform: translateY(-2px);
     box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.15);
@@ -75,31 +102,35 @@
     font-size: 16px;
     color: hsl(200, 0%, 20%);
     line-height: 1.3;
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
 }
 
 /* Song Artist */
 .song-artist-dashboard {
     font-size: 13px;
-    color: hsl(200, 0%, 60%);
+    color: hsl(200, 0%, 40%);
     margin-bottom: 8px;
     line-height: 1.3;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
 }
 
 /* Author */
 .author-dashboard {
     font-size: 11px;
-    color: hsl(200, 0%, 50%);
+    color: hsl(200, 0%, 35%);
     margin-bottom: 8px;
     line-height: 1.3;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
 }
 
 /* Rating */
 .rating-dashboard {
     font-size: 14px;
-    color: hsl(200, 0%, 60%);
+    color: hsl(200, 0%, 40%);
     margin-bottom: 8px;
     font-weight: 600;
     line-height: 1.3;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
 }
 
 /* Chart Actions */
@@ -119,16 +150,45 @@
     color: hsl(200, 0%, 20%);
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 32px;
     height: 32px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px);
 }
 
 .delete-btn:hover {
     background-color: hsl(0, 50%, 70%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Download Button */
+.download-btn {
+    background-color: hsl(120, 50%, 80%);
+    margin: 2px;
+    padding: 8px;
+    border-radius: 15px;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px);
+}
+
+.download-btn:hover {
+    background-color: hsl(120, 50%, 70%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Edit Button */
@@ -140,14 +200,52 @@
     color: #fff;
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 32px;
     height: 32px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px);
 }
 
 .edit-btn:hover {
     background-color: hsl(200, 50%, 70%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Chart Metadata */
+.chart-metadata {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 8px;
+    align-self: flex-end;
+    text-align: right;
+}
+
+.metadata-item {
+    font-size: 10px;
+    color: hsl(200, 0%, 50%);
+    line-height: 1.2;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 2px 6px;
+    border-radius: 8px;
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.metadata-item.likes {
+    color: hsl(0, 60%, 50%);
+}
+
+.metadata-item.created {
+    color: hsl(200, 60%, 40%);
+}
+
+.metadata-item.updated {
+    color: hsl(120, 60%, 40%);
 }

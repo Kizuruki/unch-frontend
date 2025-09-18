@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Download } from "lucide-react";
 import AudioControls from "../audio-control/AudioControls";
 import AudioVisualizer from "../audio-visualizer/AudioVisualizer";
 import "./ChartsList.css";
@@ -13,7 +13,8 @@ export default function ChartsList({
   onPlay, 
   onStop, 
   onAudioRef, 
-  onEdit 
+  onEdit,
+  sonolusUser 
 }) {
   if (loading) {
     return (
@@ -29,6 +30,12 @@ export default function ChartsList({
         <li 
           key={post.id} 
           className="dashboard-li"
+          style={{
+            backgroundImage: post.backgroundUrl ? `url(${post.backgroundUrl})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
         >
           <Link
             href={`/levels?id=${encodeURIComponent(post.id)}`}
@@ -74,12 +81,44 @@ export default function ChartsList({
             </div>
             
             <div className="chart-actions">
-              <button className="edit-btn" type="button" onClick={() => onEdit(post)} title="Edit">
-                <Pencil size={16} />
-              </button>
-              <button className="delete-btn" type="button" title="Delete">
-                <Trash2 size={16} />
-              </button>
+              {post.chartUrl && (
+                <button 
+                  className="download-btn" 
+                  type="button" 
+                  onClick={() => window.open(post.chartUrl, '_blank')} 
+                  title="Download Chart"
+                >
+                  <Download size={16} />
+                </button>
+              )}
+              {sonolusUser && `${sonolusUser.name}#${sonolusUser.handle}` === post.author && (
+                <>
+                  <button className="edit-btn" type="button" onClick={() => onEdit(post)} title="Edit">
+                    <Pencil size={16} />
+                  </button>
+                  <button className="delete-btn" type="button" title="Delete">
+                    <Trash2 size={16} />
+                  </button>
+                </>
+              )}
+            </div>
+            
+            <div className="chart-metadata">
+              {post.likeCount !== undefined && (
+                <span className="metadata-item likes">
+                  ❤️ {post.likeCount}
+                </span>
+              )}
+              {post.createdAt && (
+                <span className="metadata-item created">
+                  📅 {new Date(post.createdAt).toLocaleDateString()}
+                </span>
+              )}
+              {post.updatedAt && (
+                <span className="metadata-item updated">
+                  🔄 {new Date(post.updatedAt).toLocaleDateString()}
+                </span>
+              )}
             </div>
           </div>
         </li>

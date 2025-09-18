@@ -132,7 +132,7 @@ export default function Home() {
           </div>
           <ul className="songlist">
             {visiblePosts.map((post) => (
-              <Link key={post.id} href={`/levels/${post.id}`}>
+              <Link key={post.id} href={`/levels?id=${encodeURIComponent(post.id)}`}>
               <li>
                 <img className="levels-img" src={post.coverUrl} alt={post.title} />
                 <div>

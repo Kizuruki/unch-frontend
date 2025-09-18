@@ -182,7 +182,7 @@ export default function Dashboard() {
                   className="dashboard-li"
                 >
                   <Link
-                    href={`/levels/${encodeURIComponent(post.id)}`}
+                    href={`/levels?id=${encodeURIComponent(post.id)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -193,11 +193,17 @@ export default function Dashboard() {
                     />
                   </Link>
                   <div className="song-info">
+                  <Link
+                    href={`/levels?id=${encodeURIComponent(post.id)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <span className="song-title-dashboard">
                       {post.title.length > 25
                         ? post.title.substring(0, 25) + "..."
                         : post.title}
                     </span>
+                  </Link>
                     <span className="song-artist-dashboard">
                       {post.artists.length > 30
                         ? post.artists.substring(0, 30) + "..."

@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 
 export default function Login() {
   const [isWaiting, setIsWaiting] = useState(false)
-  const [idState, setIdState] = useState("")
+  const [sessionId, setSessionId] = useState(null)
 
   const sonolusServerUrl = process.env['NEXT_PUBLIC_SONOLUS_SERVER_URL'];
   const apiUrl = process.env['NEXT_PUBLIC_API_URL'];
@@ -17,11 +17,12 @@ export default function Login() {
     try {
       const apiUrlNoHTTPS = apiUrl.replace("http://", "").replace("https://", "")
       const sonolusServerUrlNoHTTPS = sonolusServerUrl.replace("http://", "").replace("https://", "")
-
       const { id } = await (await fetch(`${apiUrl}/api/accounts/session/external/id`, { method: "POST" })).json()
-      setIdState(id)
-      window.open(`https://open.sonolus.com/external-login/${sonolusServerUrlNoHTTPS}/sonolus/authenticate_external?id=${id}`, "_blank", "noopener,noreferrer")
 
+      const [_proto, host] = sonolusServerUrl.split("://")
+      window.open(`https://open.sonolus.com/external-login/${host}/sonolus/authenticate_external?id=${id}`, "_blank", "noopener,noreferrer")
+
+      setSessionId(id)
       setIsWaiting(true)
     } catch (e) {
       console.log(e)
@@ -29,16 +30,19 @@ export default function Login() {
   }
 
   useEffect(() => {
-    if (!isWaiting) return
+    if (!isWaiting || !sessionId) return
 
     const interval = setInterval(async () => {
-      const res = await fetch(`${apiUrl}/api/accounts/session/external/get?id=${idState}`)
+      const res = await fetch(`${apiUrl}/api/accounts/session/external/get?id=${sessionId}`)
 
       if (res.status === 202) {
         const { session_key, expiry } = await res.json()
 
         localStorage.setItem("session", session_key)
         localStorage.setItem("expiry", expiry)
+
+        // Dispatch custom event to notify layout of auth change
+        window.dispatchEvent(new CustomEvent('authChange'))
 
         setIsWaiting(false)
         redirect("/dashboard")
@@ -49,7 +53,7 @@ export default function Login() {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [isWaiting])
+  }, [isWaiting, sessionId])
 
   return (
     <main>

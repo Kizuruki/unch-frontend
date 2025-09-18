@@ -110,3 +110,194 @@
     font-size: 14px;
 }
 
+/* Dashboard Container */
+.dashboard-container {
+    width: 100%;
+    min-height: 800px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    gap: 20px;
+}
+
+/* My Charts Section */
+.my-charts {
+    height: 80vh;
+    min-height: 700px;
+    overflow: auto;
+    width: 100%;
+    max-width: 1000px;
+    position: relative;
+    background-color: hsl(200, 50%, 90%);
+    border-radius: 40px;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2),
+     -5px -5px 15px rgba(255, 255, 255, 0.5);
+}
+
+/* Upload Section (Header) */
+.upload-section {
+    position: sticky;
+    top: 0;
+    min-height: 80px;
+    background-color: rgba(255, 255, 255, 0.8);
+    width: 100%;
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+    justify-items: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+.mode-selector {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    width: 100%;
+}
+
+.mode-btn {
+    background-color: hsl(200, 50%, 80%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mode-btn:hover {
+    background-color: hsl(200, 50%, 70%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.mode-btn.active {
+    background-color: hsl(200, 50%, 60%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Search Controls */
+.search-controls-container {
+    background-color: rgba(255, 255, 255, 0.6);
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.search-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    align-items: end;
+}
+
+.search-type-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.search-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.search-field label {
+    font-weight: 600;
+    color: hsl(200, 50%, 40%);
+    font-size: 14px;
+}
+
+.search-field input,
+.search-field select {
+    padding: 8px 12px;
+    border: 1px solid hsl(200, 50%, 60%);
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+}
+
+.search-field input:focus,
+.search-field select:focus {
+    outline: none;
+    border-color: hsl(200, 50%, 50%);
+    box-shadow: 0 0 0 2px rgba(200, 200, 255, 0.3);
+}
+
+.search-btn {
+    background-color: hsl(200, 50%, 80%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    grid-column: 1 / -1;
+    justify-self: center;
+    margin-top: 10px;
+}
+
+.search-btn:hover {
+    background-color: hsl(200, 50%, 70%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Charts Section */
+.charts-section {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    padding: 20px;
+}
+
+.my-charts::-webkit-scrollbar {
+    display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .my-charts {
+        height: 70vh;
+        min-height: 500px;
+        max-width: 95%;
+    }
+    
+    .dashboard-container {
+        min-height: 600px;
+        gap: 15px;
+    }
+    
+    .upload-section {
+        padding: 20px;
+        min-height: 60px;
+    }
+    
+    .mode-selector {
+        flex-direction: row;
+        gap: 5px;
+        justify-content: center;
+    }
+    
+    .mode-btn {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+    
+    .search-controls {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .search-controls-container {
+        padding: 15px;
+    }
+}
+

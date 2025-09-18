@@ -1,17 +1,27 @@
 "use client";
 import "./page.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { Pencil, Trash2 } from "lucide-react";
+import AudioControls from "./AudioControls";
+import AudioVisualizer from "./AudioVisualizer";
 
-const APILink = process.env.NEXT_PUBLIC_LEVELAPI;
+const APILink = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Dashboard() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
   const [isOpen, setIsOpen] = useState(false);
-  const [mode, setMode] = useState(null); 
+  const [mode, setMode] = useState(null);
+  
+  // Audio state management
+  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+  const audioRefs = useRef({});
 
   const [form, setForm] = useState({
     title: "",
@@ -25,30 +35,40 @@ export default function Dashboard() {
     chart: null,
   });
 
-  const handleMyCharts = async () => {
+  const handleMyCharts = async (page = 0) => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(
-        `${APILink}/sonolus/levels/list/`
+        `${APILink}/api/charts?page=${page}&type=quick`
       );
       if (!res.ok) throw new Error(`Network error: ${res.status}`);
       const data = await res.json();
 
-      const BASE = `${APILink}`;
-      const items = Array.isArray(data?.items) ? data.items : [];
+      const BASE = data.asset_base_url || `${APILink}`;
+      const items = Array.isArray(data?.data) ? data.data : [];
 
       const normalized = items.map((item) => ({
-        id: item.name,
+        id: item.id,
         title: item.title,
         artists: item.artists,
-        author: item.author,
+        author: item.author_full || item.author,
         rating: item.rating,
-        coverUrl: item.cover ? BASE + item.cover.url : "",
-        bgmUrl: item.bgm ? BASE + item.bgm.url : "",
+        description: item.description,
+        tags: item.tags,
+        coverUrl: item.jacket_file_hash ? `${BASE}/${item.author}/${item.id}/${item.jacket_file_hash}` : "",
+        bgmUrl: item.music_file_hash ? `${BASE}/${item.author}/${item.id}/${item.music_file_hash}` : "",
+        likeCount: item.like_count,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at,
       }));
 
+      console.log(normalized);
+
       setPosts(normalized);
+      setPageCount(data.pageCount || 0);
+      setTotalCount(data.data?.[0]?.total_count || 0);
+      setCurrentPage(page);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -59,6 +79,7 @@ export default function Dashboard() {
   useEffect(() => {
     handleMyCharts();
   }, []);
+
 
   const openUpload = () => {
     setMode("upload");
@@ -110,11 +131,38 @@ export default function Dashboard() {
     console.log("Submit", mode, form);
   };
 
-  if (loading) return <main><p>Loading...</p></main>;
+  // Audio control functions
+  const handlePlay = (postId) => {
+    // Stop any currently playing audio
+    if (currentlyPlaying && currentlyPlaying !== postId) {
+      const currentAudio = audioRefs.current[currentlyPlaying];
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+    }
+    
+    setCurrentlyPlaying(postId);
+  };
+
+  const handleStop = (postId) => {
+    if (currentlyPlaying === postId) {
+      setCurrentlyPlaying(null);
+    }
+  };
+
+  const handleAudioRef = useCallback((postId, audioElement) => {
+    audioRefs.current[postId] = audioElement;
+  }, []);
+
+
+
+
   if (error) return <main><p>Error: {error}</p></main>
 
   return (
     <main>
+      
       <div className="dashboard-container">
         <div className="my-charts">
           <div className="upload-section">
@@ -122,9 +170,17 @@ export default function Dashboard() {
             <button className="upload-btn" type="button" onClick={openUpload}>Upload New Level</button>
           </div>
           <div className="charts-section">
-            <ul className="songlist">
-              {posts.map((post) => (
-                <li key={post.id} className="dashboard-li">
+            {loading ? (
+              <div className="loading-container">
+                <p>Loading charts...</p>
+              </div>
+            ) : (
+              <ul className="songlist">
+                {posts.map((post) => (
+                <li 
+                  key={post.id} 
+                  className="dashboard-li"
+                >
                   <Link
                     href={`/levels/${encodeURIComponent(post.id)}`}
                     target="_blank"
@@ -142,15 +198,85 @@ export default function Dashboard() {
                         ? post.title.substring(0, 25) + "..."
                         : post.title}
                     </span>
+                    <span className="song-artist-dashboard">
+                      {post.artists.length > 30
+                        ? post.artists.substring(0, 30) + "..."
+                        : post.artists}
+                    </span>
                     <span className="rating-dashboard">Lv.{post.rating}</span>
-                    <button className="edit-btn" type="button" onClick={() => openEdit(post)}>Edit</button>
-                    <button className="delete-btn" type="button">Delete</button>
+                    <span className="author-dashboard">by {post.author}</span>
+                    
+                    {/* Audio Components */}
+                    <div className="audio-section">
+                      <AudioControls
+                        bgmUrl={post.bgmUrl}
+                        onPlay={() => handlePlay(post.id)}
+                        onStop={() => handleStop(post.id)}
+                        isPlaying={currentlyPlaying === post.id}
+                        isActive={currentlyPlaying === post.id}
+                        audioRef={(ref) => handleAudioRef(post.id, ref)}
+                      />
+                      {currentlyPlaying === post.id && (
+                        <AudioVisualizer
+                          audioRef={audioRefs.current[post.id]}
+                          isPlaying={currentlyPlaying === post.id}
+                        />
+                      )}
+                    </div>
+                    
+                    <div className="chart-actions">
+                      <button className="edit-btn" type="button" onClick={() => openEdit(post)} title="Edit">
+                        <Pencil size={16} />
+                      </button>
+                      <button className="delete-btn" type="button" title="Delete">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
                 </li>
-              ))}
-            </ul>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
+        
+        {/* Pagination Card - Separate at bottom */}
+        {pageCount > 1 && (
+          <div className="pagination-card">
+            <div className="pagination-info">
+              <p>Page {currentPage + 1} of {pageCount} • Showing {posts.length} charts</p>
+            </div>
+            <div className="pagination-controls">
+              <button 
+                className="pagination-btn"
+                onClick={() => handleMyCharts(currentPage - 1)}
+                disabled={currentPage <= 0}
+              >
+                Previous
+              </button>
+              
+              <div className="pagination-numbers">
+                {Array.from({ length: pageCount }, (_, i) => i).map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    className={`pagination-number ${currentPage === pageNum ? 'active' : ''}`}
+                    onClick={() => handleMyCharts(pageNum)}
+                  >
+                    {pageNum + 1}
+                  </button>
+                ))}
+              </div>
+              
+              <button 
+                className="pagination-btn"
+                onClick={() => handleMyCharts(currentPage + 1)}
+                disabled={currentPage >= pageCount - 1}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
         <div className={`edit-container ${isOpen ? "open" : ""}`} hidden={!isOpen}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 16 }}>
             <strong>{mode === "edit" ? "Edit data" : "Upload New Level"}</strong>

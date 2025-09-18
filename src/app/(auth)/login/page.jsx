@@ -15,6 +15,8 @@ export default function Login() {
   const onSubmit = async e => {
     e.preventDefault()
     try {
+      const apiUrlNoHTTPS = apiUrl.replace("http://", "").replace("https://", "")
+      const sonolusServerUrlNoHTTPS = sonolusServerUrl.replace("http://", "").replace("https://", "")
       const { id } = await (await fetch(`${apiUrl}/api/accounts/session/external/id`, { method: "POST" })).json()
 
       const [_proto, host] = sonolusServerUrl.split("://")
@@ -67,9 +69,6 @@ export default function Login() {
             <input type="password" id="password" name="password" required /> */}
               <button type="submit" className="login-btn">Log In via Sonolus</button>
             </form>
-            <p>
-              Don't have an account? <span className="sucks">that sucks</span>
-            </p>
           </>)}
         </div>
       </div>

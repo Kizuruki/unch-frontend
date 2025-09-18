@@ -1,10 +1,9 @@
 "use client";
 import "./page.css";
 import { useState, useEffect, useRef, useCallback } from "react";
-import Link from "next/link";
-import { Pencil, Trash2 } from "lucide-react";
-import AudioControls from "./AudioControls";
-import AudioVisualizer from "./AudioVisualizer";
+import ChartsList from "../../components/charts-list/ChartsList";
+import PaginationControls from "../../components/pagination-controls/PaginationControls";
+import ChartModal from "../../components/chart-modal/ChartModal";
 
 const APILink = process.env.NEXT_PUBLIC_API_URL;
 
@@ -62,8 +61,6 @@ export default function Dashboard() {
         createdAt: item.created_at,
         updatedAt: item.updated_at,
       }));
-
-      console.log(normalized);
 
       setPosts(normalized);
       setPageCount(data.pageCount || 0);
@@ -155,14 +152,10 @@ export default function Dashboard() {
     audioRefs.current[postId] = audioElement;
   }, []);
 
-
-
-
   if (error) return <main><p>Error: {error}</p></main>
 
   return (
     <main>
-      
       <div className="dashboard-container">
         <div className="my-charts">
           <div className="upload-section">
@@ -170,161 +163,33 @@ export default function Dashboard() {
             <button className="upload-btn" type="button" onClick={openUpload}>Upload New Level</button>
           </div>
           <div className="charts-section">
-            {loading ? (
-              <div className="loading-container">
-                <p>Loading charts...</p>
-              </div>
-            ) : (
-              <ul className="songlist">
-                {posts.map((post) => (
-                <li 
-                  key={post.id} 
-                  className="dashboard-li"
-                >
-                  <Link
-                    href={`/levels?id=${encodeURIComponent(post.id)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      className="dashboard-img"
-                      src={post.coverUrl}
-                      alt={post.title}
-                    />
-                  </Link>
-                  <div className="song-info">
-                  <Link
-                    href={`/levels?id=${encodeURIComponent(post.id)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <span className="song-title-dashboard">
-                      {post.title.length > 25
-                        ? post.title.substring(0, 25) + "..."
-                        : post.title}
-                    </span>
-                  </Link>
-                    <span className="song-artist-dashboard">
-                      {post.artists.length > 30
-                        ? post.artists.substring(0, 30) + "..."
-                        : post.artists}
-                    </span>
-                    <span className="rating-dashboard">Lv.{post.rating}</span>
-                    <span className="author-dashboard">by {post.author}</span>
-                    
-                    {/* Audio Components */}
-                    <div className="audio-section">
-                      <AudioControls
-                        bgmUrl={post.bgmUrl}
-                        onPlay={() => handlePlay(post.id)}
-                        onStop={() => handleStop(post.id)}
-                        isPlaying={currentlyPlaying === post.id}
-                        isActive={currentlyPlaying === post.id}
-                        audioRef={(ref) => handleAudioRef(post.id, ref)}
-                      />
-                      {currentlyPlaying === post.id && (
-                        <AudioVisualizer
-                          audioRef={audioRefs.current[post.id]}
-                          isPlaying={currentlyPlaying === post.id}
-                        />
-                      )}
-                    </div>
-                    
-                    <div className="chart-actions">
-                      <button className="edit-btn" type="button" onClick={() => openEdit(post)} title="Edit">
-                        <Pencil size={16} />
-                      </button>
-                      <button className="delete-btn" type="button" title="Delete">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </li>
-                ))}
-              </ul>
-            )}
+            <ChartsList
+              posts={posts}
+              loading={loading}
+              currentlyPlaying={currentlyPlaying}
+              audioRefs={audioRefs.current}
+              onPlay={handlePlay}
+              onStop={handleStop}
+              onAudioRef={handleAudioRef}
+              onEdit={openEdit}
+            />
           </div>
         </div>
         
-        {/* Pagination Card - Separate at bottom */}
-        {pageCount > 1 && (
-          <div className="pagination-card">
-            <div className="pagination-info">
-              <p>Page {currentPage + 1} of {pageCount} • Showing {posts.length} charts</p>
-            </div>
-            <div className="pagination-controls">
-              <button 
-                className="pagination-btn"
-                onClick={() => handleMyCharts(currentPage - 1)}
-                disabled={currentPage <= 0}
-              >
-                Previous
-              </button>
-              
-              <div className="pagination-numbers">
-                {Array.from({ length: pageCount }, (_, i) => i).map((pageNum) => (
-                  <button
-                    key={pageNum}
-                    className={`pagination-number ${currentPage === pageNum ? 'active' : ''}`}
-                    onClick={() => handleMyCharts(pageNum)}
-                  >
-                    {pageNum + 1}
-                  </button>
-                ))}
-              </div>
-              
-              <button 
-                className="pagination-btn"
-                onClick={() => handleMyCharts(currentPage + 1)}
-                disabled={currentPage >= pageCount - 1}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-        <div className={`edit-container ${isOpen ? "open" : ""}`} hidden={!isOpen}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 16 }}>
-            <strong>{mode === "edit" ? "Edit data" : "Upload New Level"}</strong>
-            <button type="button" onClick={closePanel} aria-label="Close">✕</button>
-          </div>
-          <div className="meta-form" hidden={mode !== "edit"}>
-            <form onSubmit={onSubmit}>
-              <label className="label-title" htmlFor="title">Song title:</label>
-              <input id="title" className="input-title" type="text" value={form.title} onChange={update("title")} />
-
-              <label className="label-artist" htmlFor="artists">Artist(s):</label>
-              <input id="artists" className="input-artist" type="text" value={form.artists} onChange={update("artists")} />
-
-              <label className="label-charter" htmlFor="author">Chart Designer:</label>
-              <input id="author" className="input-charter" type="text" value={form.author} onChange={update("author")} />
-
-              <label className="label-rating" htmlFor="rating">Lv:</label>
-              <input id="rating" className="input-rating" type="number" inputMode="numeric" value={form.rating} onChange={update("rating")} />
-
-              <label className="label-description" htmlFor="description">Description:</label>
-              <input id="description" className="input-description" type="text" value={form.description} onChange={update("description")} />
-
-              <label className="label-tags" htmlFor="tags">Tags:</label>
-              <input id="tags" className="input-tags" type="text" value={form.tags} onChange={update("tags")} />
-
-              <label className="label-jacket" htmlFor="jacket">Cover Image (png, jpg, jpeg):</label>
-              <input id="jacket" className="input-jacket" type="file" accept="image/*" onChange={update("jacket")} />
-
-              <label className="label-bgm" htmlFor="bgm">Audio:</label>
-              <input id="bgm" className="input-bgm" type="file" accept="audio/*" onChange={update("bgm")} />
-
-              <label className="label-chart" htmlFor="chart">Chart (.SUS or .USC):</label>
-              <input id="chart" className="input-chart" type="file" accept=".sus,.usc" onChange={update("chart")} />
-
-              <button className="edit-save-btn" type="submit">Save</button>
-            </form>
-          </div>
-          <div className="upload-form" hidden={mode !== "upload"}>
-            {/* placeholder  */}
-            <div style={{ padding: 16, opacity: 0.7 }}>Upload form goes here… eventually</div>
-          </div>
-        </div>
+        <PaginationControls
+          pageCount={pageCount}
+          currentPage={currentPage}
+          posts={posts}
+          onPageChange={handleMyCharts}
+        />
+        <ChartModal
+          isOpen={isOpen}
+          mode={mode}
+          form={form}
+          onClose={closePanel}
+          onSubmit={onSubmit}
+          onUpdate={update}
+        />
       </div>
     </main>
   );

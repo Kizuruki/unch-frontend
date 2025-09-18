@@ -21,8 +21,11 @@ export function UserProvider({ children }) {
       const now = new Date().getTime();
       const expiryTime = parseInt(expiry, 10);
       
+      console.log('Session check:', { now, expiryTime, expired: now >= expiryTime });
+      
       if (isNaN(expiryTime) || now >= expiryTime) {
         // Session expired, clear localStorage
+        console.log('Session expired, clearing data');
         localStorage.removeItem("session");
         localStorage.removeItem("expiry");
         setIsLoggedIn(false);
@@ -43,6 +46,21 @@ export function UserProvider({ children }) {
             "Authorization": `${sessionValue}`
           }
         });
+
+        // Check if the API call failed due to expired session
+        if (!me.ok) {
+          console.log('API call failed, session might be expired:', me.status);
+          if (me.status === 401 || me.status === 403) {
+            // Session is invalid, clear everything
+            localStorage.removeItem("session");
+            localStorage.removeItem("expiry");
+            setIsLoggedIn(false);
+            setSonolusUser(null);
+            setSession(null);
+            setLoading(false);
+            return;
+          }
+        }
 
         const meData = await me.json();
         console.log(meData);
@@ -73,6 +91,8 @@ export function UserProvider({ children }) {
 
       } catch (error) {
         console.log('Error fetching user data:', error);
+        // If there's a network error, don't clear the session
+        // The user might just be offline
       }
     } else {
       setIsLoggedIn(false);
@@ -97,8 +117,42 @@ export function UserProvider({ children }) {
     checkAuthStatus();
   };
 
+  // Function to check if session is still valid
+  const isSessionValid = () => {
+    const sessionValue = localStorage.getItem("session");
+    const expiry = localStorage.getItem("expiry");
+    
+    if (!sessionValue || !expiry) {
+      return false;
+    }
+    
+    const now = new Date().getTime();
+    const expiryTime = parseInt(expiry, 10);
+    
+    return !isNaN(expiryTime) && now < expiryTime;
+  };
+
+  // Function to clear expired session
+  const clearExpiredSession = () => {
+    console.log('Clearing expired session');
+    localStorage.removeItem("session");
+    localStorage.removeItem("expiry");
+    setIsLoggedIn(false);
+    setSonolusUser(null);
+    setSession(null);
+    // Dispatch event to notify other components
+    window.dispatchEvent(new CustomEvent('authChange'));
+  };
+
   useEffect(() => {
     checkAuthStatus();
+    
+    // Set up periodic session check (every 5 minutes)
+    const sessionCheckInterval = setInterval(() => {
+      if (isLoggedIn && !isSessionValid()) {
+        clearExpiredSession();
+      }
+    }, 5 * 60 * 1000); // 5 minutes
     
     // Listen for storage changes (e.g., when user logs in/out in another tab)
     window.addEventListener('storage', checkAuthStatus);
@@ -108,10 +162,11 @@ export function UserProvider({ children }) {
     window.addEventListener('authChange', handleAuthChange);
     
     return () => {
+      clearInterval(sessionCheckInterval);
       window.removeEventListener('storage', checkAuthStatus);
       window.removeEventListener('authChange', handleAuthChange);
     };
-  }, []);
+  }, [isLoggedIn]);
 
   const value = {
     isLoggedIn,
@@ -119,7 +174,9 @@ export function UserProvider({ children }) {
     loading,
     session,
     handleLogout,
-    refreshUser
+    refreshUser,
+    isSessionValid,
+    clearExpiredSession
   };
 
   return (

@@ -10,7 +10,7 @@ import { useUser } from "../contexts/UserContext";
 
 
 export default function Home() {
-  const { sonolusUser, session } = useUser();
+  const { sonolusUser, session, isSessionValid, clearExpiredSession } = useUser();
   
   // Unified section state
   const [sectionMode, setSectionMode] = useState("myCharts"); // "myCharts" or "search"

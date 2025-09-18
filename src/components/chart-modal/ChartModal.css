@@ -105,3 +105,87 @@
 .edit-save-btn:hover {
     background-color: hsl(200, 50%, 50%);
 }
+
+/* Upload Form Styles */
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+}
+
+.upload-form label {
+    font-weight: 500;
+    color: hsl(200, 0%, 30%);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.upload-form input,
+.upload-form textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid hsl(200, 50%, 80%);
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.upload-form input:focus,
+.upload-form textarea:focus {
+    outline: none;
+    border-color: hsl(200, 50%, 60%);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.upload-form textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.upload-save-btn {
+    background-color: hsl(120, 50%, 50%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 8px;
+}
+
+.upload-save-btn:hover {
+    background-color: hsl(120, 50%, 40%);
+}
+
+.upload-save-btn:disabled {
+    background-color: hsl(200, 50%, 80%);
+    cursor: not-allowed;
+}
+
+/* File input styling */
+.upload-form input[type="file"] {
+    padding: 6px;
+    border: 2px dashed hsl(200, 50%, 80%);
+    background-color: hsl(200, 50%, 98%);
+    cursor: pointer;
+}
+
+.upload-form input[type="file"]:hover {
+    border-color: hsl(200, 50%, 60%);
+    background-color: hsl(200, 50%, 95%);
+}
+
+/* Required field indicator */
+.upload-form input[required]::after {
+    content: " *";
+    color: red;
+}
+
+/* Optional field styling */
+.upload-form input:not([required]) {
+    border-style: dashed;
+    opacity: 0.8;
+}

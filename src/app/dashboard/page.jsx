@@ -9,7 +9,14 @@ import { useUser } from "../../contexts/UserContext";
 const APILink = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Dashboard() {
-  const { sonolusUser, session, isSessionValid, clearExpiredSession, isClient, sessionReady } = useUser();
+  const {
+    sonolusUser,
+    session,
+    isSessionValid,
+    clearExpiredSession,
+    isClient,
+    sessionReady,
+  } = useUser();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -20,7 +27,8 @@ export default function Dashboard() {
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState(null);
   const [editData, setEditData] = useState(null);
-  
+  const [deletablePost, setDeletablePost] = useState(null);
+
   // Audio state management
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
   const audioRefs = useRef({});
@@ -42,54 +50,55 @@ export default function Dashboard() {
   const handleMyCharts = async (page = 0) => {
     setLoading(true);
     setError(null);
-    
+
     // Don't make API calls until client-side mounting is complete
     if (!isClient) {
       setLoading(false);
       return;
     }
-    
+
     // Don't make API calls until session has been properly evaluated
     if (!sessionReady) {
       setLoading(false);
       return;
     }
-    
+
     // Check if session is still valid before making API call
     if (!isSessionValid()) {
-      console.log('Session expired, clearing data');
+      console.log("Session expired, clearing data");
       clearExpiredSession();
       setLoading(false);
       return;
     }
-    
+
     // Ensure we have a session token before making the API call
     if (!session) {
-      console.log('No session token available, skipping API call');
+      console.log("No session token available, skipping API call");
       setLoading(false);
       return;
     }
-    
+
     try {
       const res = await fetch(
-        `${APILink}/api/charts?page=${page}&type=advanced&status=ALL`, {
+        `${APILink}/api/charts?page=${page}&type=advanced&status=ALL`,
+        {
           headers: {
-            "Authorization": `${session}`
-          }
+            Authorization: `${session}`,
+          },
         }
       );
-      
+
       // Check if the API call failed due to expired session
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) {
-          console.log('API call failed due to expired session');
+          console.log("API call failed due to expired session");
           clearExpiredSession();
           setLoading(false);
           return;
         }
         throw new Error(`Network error: ${res.status}`);
       }
-      
+
       const data = await res.json();
 
       const BASE = data.asset_base_url || `${APILink}`;
@@ -104,11 +113,21 @@ export default function Dashboard() {
         rating: item.rating,
         description: item.description,
         tags: item.tags,
-        coverUrl: item.jacket_file_hash ? `${BASE}/${item.author}/${item.id}/${item.jacket_file_hash}` : "",
-        bgmUrl: item.music_file_hash ? `${BASE}/${item.author}/${item.id}/${item.music_file_hash}` : "",
-        backgroundUrl: item.background_file_hash ? `${BASE}/${item.author}/${item.id}/${item.background_file_hash}` : `${BASE}/${item.author}/${item.id}/background_v3_file_hash`,
-        chartUrl: item.chart_file_hash ? `${BASE}/${item.author}/${item.id}/${item.chart_file_hash}` : "",
-        previewUrl: item.preview_file_hash ? `${BASE}/${item.author}/${item.id}/${item.preview_file_hash}` : "",
+        coverUrl: item.jacket_file_hash
+          ? `${BASE}/${item.author}/${item.id}/${item.jacket_file_hash}`
+          : "",
+        bgmUrl: item.music_file_hash
+          ? `${BASE}/${item.author}/${item.id}/${item.music_file_hash}`
+          : "",
+        backgroundUrl: item.background_file_hash
+          ? `${BASE}/${item.author}/${item.id}/${item.background_file_hash}`
+          : `${BASE}/${item.author}/${item.id}/background_v3_file_hash`,
+        chartUrl: item.chart_file_hash
+          ? `${BASE}/${item.author}/${item.id}/${item.chart_file_hash}`
+          : "",
+        previewUrl: item.preview_file_hash
+          ? `${BASE}/${item.author}/${item.id}/${item.preview_file_hash}`
+          : "",
         likeCount: item.like_count,
         createdAt: item.created_at,
         updatedAt: item.updated_at,
@@ -133,21 +152,20 @@ export default function Dashboard() {
     }
   }, [isClient, sessionReady]);
 
-
   const openUpload = () => {
     setMode("upload");
     setForm({
-        title: "",
-        artists: "",
-        author: "",
-        rating: "",
-        description: "",
-        tags: "",
-        jacket: null,
-        bgm: null,
-        chart: null,
-        preview: null,
-        background: null,
+      title: "",
+      artists: "",
+      author: "",
+      rating: "",
+      description: "",
+      tags: "",
+      jacket: null,
+      bgm: null,
+      chart: null,
+      preview: null,
+      background: null,
     });
     setError(null); // Clear any previous errors
     setIsOpen(true);
@@ -156,26 +174,26 @@ export default function Dashboard() {
   const openEdit = (post) => {
     setMode("edit");
     setForm({
-        title: post.title,
-        artists: post.artists,
-        author: post.author,
-        rating: String(post.rating ?? ""),
-        description: post.description || "",
-        tags: post.tags || "",
-        jacket: null,
-        bgm: null,
-        chart: null,
-        preview: null,
-        background: null,
+      title: post.title,
+      artists: post.artists,
+      author: post.author,
+      rating: String(post.rating ?? ""),
+      description: post.description || "",
+      tags: post.tags || "",
+      jacket: null,
+      bgm: null,
+      chart: null,
+      preview: null,
+      background: null,
     });
     setEditData({
-        id: post.id,
-        title: post.title,
-        jacketUrl: post.coverUrl,
-        bgmUrl: post.bgmUrl,
-        chartUrl: post.chartUrl,
-        previewUrl: post.previewUrl,
-        backgroundUrl: post.backgroundUrl,
+      id: post.id,
+      title: post.title,
+      jacketUrl: post.coverUrl,
+      bgmUrl: post.bgmUrl,
+      chartUrl: post.chartUrl,
+      previewUrl: post.previewUrl,
+      backgroundUrl: post.backgroundUrl,
     });
     setError(null); // Clear any previous errors
     setIsOpen(true);
@@ -204,8 +222,8 @@ export default function Dashboard() {
 
   const update = (key) => (e) => {
     const value =
-    e.target.type === "file" ? e.target.files?.[0] ?? null : e.target.value;
-    setForm((prev) => ({ ...prev, [key]: value}));
+      e.target.type === "file" ? e.target.files?.[0] ?? null : e.target.value;
+    setForm((prev) => ({ ...prev, [key]: value }));
     // Clear any errors when user starts interacting with the form
     if (error) {
       setError(null);
@@ -214,7 +232,7 @@ export default function Dashboard() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (mode === "upload") {
       await handleUpload();
     } else if (mode === "edit") {
@@ -232,31 +250,31 @@ export default function Dashboard() {
         setLoading(false);
         return;
       }
-      
+
       // Don't proceed until session is ready
       if (!sessionReady) {
         setLoading(false);
         return;
       }
-      
+
       // Check if session is still valid
       if (!isSessionValid()) {
-        console.log('Session expired, clearing data');
+        console.log("Session expired, clearing data");
         clearExpiredSession();
         setLoading(false);
         return;
       }
-      
+
       // Ensure we have a session token
       if (!session) {
-        console.log('No session token available');
-        setError('No session token available');
+        console.log("No session token available");
+        setError("No session token available");
         setLoading(false);
         return;
       }
 
       if (!editData || !editData.id) {
-        setError('No chart selected for editing');
+        setError("No chart selected for editing");
         setLoading(false);
         return;
       }
@@ -285,8 +303,11 @@ export default function Dashboard() {
 
       // Validate tags
       let tags = [];
-      if (form.tags && typeof form.tags === 'string' && form.tags.trim()) {
-        tags = form.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+      if (form.tags && typeof form.tags === "string" && form.tags.trim()) {
+        tags = form.tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag.length > 0);
         if (tags.length > 3) {
           setError("Maximum 3 tags allowed.");
           setLoading(false);
@@ -303,7 +324,7 @@ export default function Dashboard() {
 
       // Prepare chart data - only include fields that have values
       const chartData = {};
-      
+
       if (form.title) chartData.title = form.title;
       if (form.artists) chartData.artists = form.artists;
       if (form.author) chartData.author = form.author;
@@ -312,31 +333,33 @@ export default function Dashboard() {
       if (tags.length > 0) chartData.tags = tags;
 
       // File inclusion flags
-      if (form.jacket) chartData.includes_jacket = true;
-      if (form.bgm) chartData.includes_audio = true;
-      if (form.chart) chartData.includes_chart = true;
-      if (form.preview) chartData.includes_preview = true;
-      if (form.background) chartData.includes_background = true;
+      chartData.includes_jacket = form.jacket ? true : false;
+      chartData.includes_audio = form.bgm ? true : false;
+      chartData.includes_chart = form.chart ? true : false;
+      chartData.includes_preview = form.preview ? true : false;
+      chartData.includes_background = form.background ? true : false;
+      chartData.delete_background = false; // TODO ADD A BUTTON
+      chartData.delete_preview = false; // TODO ADD A BUTTON
 
       // Create FormData
       const formData = new FormData();
-      formData.append('data', JSON.stringify(chartData));
+      formData.append("data", JSON.stringify(chartData));
 
       // Add files only if they exist
       if (form.jacket) {
-        formData.append('jacket_image', form.jacket);
+        formData.append("jacket_image", form.jacket);
       }
       if (form.bgm) {
-        formData.append('audio_file', form.bgm);
+        formData.append("audio_file", form.bgm);
       }
       if (form.chart) {
-        formData.append('chart_file', form.chart);
+        formData.append("chart_file", form.chart);
       }
       if (form.preview) {
-        formData.append('preview_file', form.preview);
+        formData.append("preview_file", form.preview);
       }
       if (form.background) {
-        formData.append('background_image', form.background);
+        formData.append("background_image", form.background);
       }
 
       console.log("chartData", chartData);
@@ -348,17 +371,20 @@ export default function Dashboard() {
       });
 
       // Make the edit request
-      const response = await fetch(`${APILink}/api/charts/${editData.id}/edit/`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': session
-        },
-        body: formData
-      });
+      const response = await fetch(
+        `${APILink}/api/charts/${editData.id}/edit/`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: session,
+          },
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
-          console.log('Edit failed due to expired session');
+          console.log("Edit failed due to expired session");
           clearExpiredSession();
           setLoading(false);
           return;
@@ -368,7 +394,7 @@ export default function Dashboard() {
       }
 
       const result = await response.json();
-      console.log('Edit successful:', result);
+      console.log("Edit successful:", result);
 
       // Close modal, clear form, and refresh chart list
       setIsOpen(false);
@@ -389,9 +415,8 @@ export default function Dashboard() {
         background: null,
       });
       await handleMyCharts(currentPage);
-
     } catch (err) {
-      console.error('Edit error:', err);
+      console.error("Edit error:", err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -408,32 +433,42 @@ export default function Dashboard() {
         setLoading(false);
         return;
       }
-      
+
       // Don't proceed until session is ready
       if (!sessionReady) {
         setLoading(false);
         return;
       }
-      
+
       // Check if session is still valid
       if (!isSessionValid()) {
-        console.log('Session expired, clearing data');
+        console.log("Session expired, clearing data");
         clearExpiredSession();
         setLoading(false);
         return;
       }
-      
+
       // Ensure we have a session token
       if (!session) {
-        console.log('No session token available');
-        setError('No session token available');
+        console.log("No session token available");
+        setError("No session token available");
         setLoading(false);
         return;
       }
 
       // Validate required fields
-      if (!form.title || !form.artists || !form.author || !form.rating || !form.chart || !form.bgm || !form.jacket) {
-        setError("Please fill in all required fields and upload all required files.");
+      if (
+        !form.title ||
+        !form.artists ||
+        !form.author ||
+        !form.rating ||
+        !form.chart ||
+        !form.bgm ||
+        !form.jacket
+      ) {
+        setError(
+          "Please fill in all required fields and upload all required files."
+        );
         setLoading(false);
         return;
       }
@@ -463,7 +498,10 @@ export default function Dashboard() {
       // Validate tags
       let tags = [];
       if (form.tags) {
-        tags = form.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+        tags = form.tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag.length > 0);
         if (tags.length > 3) {
           setError("Maximum 3 tags allowed.");
           setLoading(false);
@@ -496,33 +534,33 @@ export default function Dashboard() {
 
       // Create FormData
       const formData = new FormData();
-      formData.append('data', JSON.stringify(chartData));
+      formData.append("data", JSON.stringify(chartData));
 
       // Add required files
-      formData.append('jacket_image', form.jacket);
-      formData.append('chart_file', form.chart);
-      formData.append('audio_file', form.bgm);
+      formData.append("jacket_image", form.jacket);
+      formData.append("chart_file", form.chart);
+      formData.append("audio_file", form.bgm);
 
       // Add optional files
       if (form.preview) {
-        formData.append('preview_file', form.preview);
+        formData.append("preview_file", form.preview);
       }
       if (form.background) {
-        formData.append('background_image', form.background);
+        formData.append("background_image", form.background);
       }
 
       // Make the upload request
       const response = await fetch(`${APILink}/api/charts/upload/`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': session
+          Authorization: session,
         },
-        body: formData
+        body: formData,
       });
 
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
-          console.log('Upload failed due to expired session');
+          console.log("Upload failed due to expired session");
           clearExpiredSession();
           setLoading(false);
           return;
@@ -532,7 +570,7 @@ export default function Dashboard() {
       }
 
       const result = await response.json();
-      console.log('Upload successful:', result);
+      console.log("Upload successful:", result);
 
       // Close modal, clear form, and refresh chart list
       setIsOpen(false);
@@ -552,9 +590,8 @@ export default function Dashboard() {
         background: null,
       });
       await handleMyCharts(currentPage);
-
     } catch (err) {
-      console.error('Upload error:', err);
+      console.error("Upload error:", err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -571,7 +608,7 @@ export default function Dashboard() {
         currentAudio.currentTime = 0;
       }
     }
-    
+
     setCurrentlyPlaying(postId);
   };
 
@@ -585,22 +622,100 @@ export default function Dashboard() {
     audioRefs.current[postId] = audioElement;
   }, []);
 
-  const handleVisibilityChange = async (chartId, currentStatus) => {
-    // Determine next status in cycle: PRIVATE -> PUBLIC -> UNLISTED -> PRIVATE
-    let nextStatus;
-    switch (currentStatus) {
-      case 'PRIVATE':
-        nextStatus = 'PUBLIC';
-        break;
-      case 'PUBLIC':
-        nextStatus = 'UNLISTED';
-        break;
-      case 'UNLISTED':
-        nextStatus = 'PRIVATE';
-        break;
-      default:
-        nextStatus = 'PRIVATE';
+  const handleDelete = async (chart) => {
+    const id = chart.id;
+
+    setDeletablePost(chart);
+  };
+
+  const actuallyDelete = async () => {
+    const chart = deletablePost;
+    const chartId = chart.id;
+    console.log(chartId)
+
+    setDeletablePost(null);
+    
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Don't proceed if not on client side
+      if (!isClient) {
+        setLoading(false);
+        return;
+      }
+
+      // Don't proceed until session is ready
+      if (!sessionReady) {
+        setLoading(false);
+        return;
+      }
+
+      // Check if session is still valid
+      if (!isSessionValid()) {
+        console.log("Session expired, clearing data");
+        clearExpiredSession();
+        setLoading(false);
+        return;
+      }
+
+      // Ensure we have a session token
+      if (!session) {
+        console.log("No session token available");
+        setError("No session token available");
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${APILink}/api/charts/${chartId}/delete/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: session,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          console.log("Deletion failed due to expired session");
+          clearExpiredSession();
+          setLoading(false);
+          return;
+        }
+        const errorText = await response.text();
+        throw new Error(`Deletion failed: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log("Deletion successful:", result);
+
+      // Refresh the chart list to show updated status
+      await handleMyCharts(currentPage);
+    } catch (err) {
+      console.error("Deletion error error:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+
+    setDeletablePost(null);
+  };
+
+  const handleVisibilityChange = async (chartId, currentStatus, intent) => {
+    // Determine next status in cycle: PRIVATE -> PUBLIC -> UNLISTED -> PRIVATE
+    let nextStatus = intent;
+    // switch (currentStatus) {
+    // case 'PRIVATE':
+    // nextStatus = 'PUBLIC';
+    //     break;
+    //   case 'PUBLIC':
+    //     nextStatus = 'UNLISTED';
+    //     break;
+    //   case 'UNLISTED':
+    //     nextStatus = 'PRIVATE';
+    //     break;
+    //   default:
+    //     nextStatus = 'PRIVATE';
+    // }
 
     try {
       setLoading(true);
@@ -611,99 +726,110 @@ export default function Dashboard() {
         setLoading(false);
         return;
       }
-      
+
       // Don't proceed until session is ready
       if (!sessionReady) {
         setLoading(false);
         return;
       }
-      
+
       // Check if session is still valid
       if (!isSessionValid()) {
-        console.log('Session expired, clearing data');
+        console.log("Session expired, clearing data");
         clearExpiredSession();
         setLoading(false);
         return;
       }
-      
+
       // Ensure we have a session token
       if (!session) {
-        console.log('No session token available');
-        setError('No session token available');
+        console.log("No session token available");
+        setError("No session token available");
         setLoading(false);
         return;
       }
 
-      const response = await fetch(`${APILink}/api/charts/${chartId}/visibility/`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': session
-        },
-        body: JSON.stringify({
-          status: nextStatus
-        })
-      });
+      const response = await fetch(
+        `${APILink}/api/charts/${chartId}/visibility/`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: session,
+          },
+          body: JSON.stringify({
+            status: nextStatus,
+          }),
+        }
+      );
 
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
-          console.log('Visibility change failed due to expired session');
+          console.log("Visibility change failed due to expired session");
           clearExpiredSession();
           setLoading(false);
           return;
         }
         const errorText = await response.text();
-        throw new Error(`Visibility change failed: ${response.status} - ${errorText}`);
+        throw new Error(
+          `Visibility change failed: ${response.status} - ${errorText}`
+        );
       }
 
       const result = await response.json();
-      console.log('Visibility change successful:', result);
+      console.log("Visibility change successful:", result);
 
       // Refresh the chart list to show updated status
       await handleMyCharts(currentPage);
-
     } catch (err) {
-      console.error('Visibility change error:', err);
+      console.error("Visibility change error:", err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-          // Show loading state while client-side mounting or session is not ready
-          if (!isClient || !sessionReady) {
-            return (
-              <main>
-                <div className="loading-container">
-                  <p>Loading...</p>
-                </div>
-              </main>
-            );
-          }
+  // Show loading state while client-side mounting or session is not ready
+  if (!isClient || !sessionReady) {
+    return (
+      <main>
+        <div className="loading-container">
+          <p>Loading...</p>
+        </div>
+      </main>
+    );
+  }
 
-          if (error) return <main><p>Error: {error}</p></main>
+  if (error)
+    return (
+      <main>
+        <p>Error: {error}</p>
+      </main>
+    );
 
-          return (
-            <main>
-              {error && (
-                <div style={{ 
-                  backgroundColor: '#fee', 
-                  color: '#c00', 
-                  padding: '10px', 
-                  margin: '10px', 
-                  borderRadius: '5px',
-                  border: '1px solid #fcc'
-                }}>
-                  {error}
-                </div>
-              )}
+  return (
+    <main>
+      {error && (
+        <div
+          style={{
+            backgroundColor: "#fee",
+            color: "#c00",
+            padding: "10px",
+            margin: "10px",
+            borderRadius: "5px",
+            border: "1px solid #fcc",
+          }}
+        >
+          {error}
+        </div>
+      )}
       <div className="dashboard-container">
         <div className="my-charts">
           <div className="upload-section">
             <h2>My Charts</h2>
-            <button 
-              className="upload-btn" 
-              type="button" 
+            <button
+              className="upload-btn"
+              type="button"
               onClick={openUpload}
               disabled={loading}
             >
@@ -722,27 +848,49 @@ export default function Dashboard() {
               onEdit={openEdit}
               sonolusUser={sonolusUser}
               onVisibilityChange={handleVisibilityChange}
+              onDelete={handleDelete}
             />
           </div>
         </div>
-        
+
         <PaginationControls
           pageCount={pageCount}
           currentPage={currentPage}
           posts={posts}
           onPageChange={handleMyCharts}
         />
-                <ChartModal
-                  isOpen={isOpen}
-                  mode={mode}
-                  form={form}
-                  onClose={closePanel}
-                  onSubmit={onSubmit}
-                  onUpdate={update}
-                  loading={loading}
-                  editData={editData}
-                />
+        <ChartModal
+          isOpen={isOpen}
+          mode={mode}
+          form={form}
+          onClose={closePanel}
+          onSubmit={onSubmit}
+          onUpdate={update}
+          loading={loading}
+          editData={editData}
+        />
       </div>
+      {deletablePost != null && (
+        <div className="modal-overlay">
+          <div className="deletion-confirmation">
+            <p className="you-sure">
+              Are you sure you want to delete "{deletablePost.title}"
+            </p>
+            <p className="cannot-be-undone">This action cannot be undone</p>
+            <div className="modal-buttons">
+              <button className="confirm-delete" onClick={actuallyDelete}>
+                Delete
+              </button>
+              <button
+                className="cancel-delete"
+                onClick={() => setDeletablePost(null)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

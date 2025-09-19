@@ -13,8 +13,8 @@ export default function ChartModal({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="edit-container" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay">
+      <div className="edit-container">
         <div className="modal-header">
           <strong>{mode === "edit" ? "Edit data" : "Upload New Level"}</strong>
           <button type="button" onClick={onClose} aria-label="Close" className="close-btn">✕</button>
@@ -22,31 +22,34 @@ export default function ChartModal({
         <div className="modal-content">
           <div className="meta-form" hidden={mode !== "edit"}>
             <form onSubmit={onSubmit}>
-              <label className="label-title" htmlFor="title">Song title:</label>
+              <label className="label-title" htmlFor="title">Song title (max 50 chars):</label>
               <input 
                 id="title" 
                 className="input-title" 
                 type="text" 
                 value={form.title} 
                 onChange={onUpdate("title")} 
+                maxLength={50}
               />
 
-              <label className="label-artist" htmlFor="artists">Artist(s):</label>
+              <label className="label-artist" htmlFor="artists">Artist(s) (max 50 chars):</label>
               <input 
                 id="artists" 
                 className="input-artist" 
                 type="text" 
                 value={form.artists} 
                 onChange={onUpdate("artists")} 
+                maxLength={50}
               />
 
-              <label className="label-charter" htmlFor="author">Chart Designer:</label>
+              <label className="label-charter" htmlFor="author">Chart Designer (max 20 chars):</label>
               <input 
                 id="author" 
                 className="input-charter" 
                 type="text" 
                 value={form.author} 
                 onChange={onUpdate("author")} 
+                maxLength={20}
               />
 
               <label className="label-rating" htmlFor="rating">Lv:</label>
@@ -55,34 +58,38 @@ export default function ChartModal({
                 className="input-rating" 
                 type="number" 
                 inputMode="numeric" 
+                max={99}
+                min={0}
                 value={form.rating} 
                 onChange={onUpdate("rating")} 
               />
 
-              <label className="label-description" htmlFor="description">Description:</label>
+              <label className="label-description" htmlFor="description">Description (max 200 chars):</label>
               <input 
                 id="description" 
                 className="input-description" 
                 type="text" 
                 value={form.description} 
                 onChange={onUpdate("description")} 
+                maxLength={200}
               />
 
-              <label className="label-tags" htmlFor="tags">Tags:</label>
+              <label className="label-tags" htmlFor="tags">Tags (max 3 tags, 10 chars each):</label>
               <input 
                 id="tags" 
                 className="input-tags" 
                 type="text" 
                 value={form.tags} 
                 onChange={onUpdate("tags")} 
+                placeholder="tag1, tag2, tag3"
               />
 
-              <label className="label-jacket" htmlFor="jacket">Cover Image (png, jpg, jpeg):</label>
+              <label className="label-jacket" htmlFor="jacket">Cover Image (png):</label>
               <input 
                 id="jacket" 
                 className="input-jacket" 
                 type="file" 
-                accept="image/*" 
+                accept="image/png" 
                 onChange={onUpdate("jacket")} 
               />
 
@@ -91,16 +98,15 @@ export default function ChartModal({
                 id="bgm" 
                 className="input-bgm" 
                 type="file" 
-                accept="audio/*" 
+                accept="audio/mp3" 
                 onChange={onUpdate("bgm")} 
               />
 
-              <label className="label-chart" htmlFor="chart">Chart (.SUS or .USC):</label>
+              <label className="label-chart" htmlFor="chart">Chart (.SUS or .USC or w/o extension):</label>
               <input 
                 id="chart" 
                 className="input-chart" 
                 type="file" 
-                accept=".sus,.usc" 
                 onChange={onUpdate("chart")} 
               />
 
@@ -109,33 +115,36 @@ export default function ChartModal({
           </div>
           <div className="upload-form" hidden={mode !== "upload"}>
             <form onSubmit={onSubmit}>
-              <label className="label-title" htmlFor="title">Song title:</label>
+              <label className="label-title" htmlFor="title">Song title (max 50 chars):</label>
               <input 
                 id="title" 
                 className="input-title" 
                 type="text" 
                 value={form.title} 
                 onChange={onUpdate("title")} 
+                maxLength={50}
                 required
               />
 
-              <label className="label-artist" htmlFor="artists">Artist(s):</label>
+              <label className="label-artist" htmlFor="artists">Artist(s) (max 50 chars):</label>
               <input 
                 id="artists" 
                 className="input-artist" 
                 type="text" 
                 value={form.artists} 
                 onChange={onUpdate("artists")} 
+                maxLength={50}
                 required
               />
 
-              <label className="label-charter" htmlFor="author">Chart Designer:</label>
+              <label className="label-charter" htmlFor="author">Chart Designer (max 20 chars):</label>
               <input 
                 id="author" 
                 className="input-charter" 
                 type="text" 
                 value={form.author} 
                 onChange={onUpdate("author")} 
+                maxLength={20}
                 required
               />
 
@@ -147,57 +156,57 @@ export default function ChartModal({
                 inputMode="numeric" 
                 value={form.rating} 
                 onChange={onUpdate("rating")} 
-                min="1"
-                max="20"
+                min={0}
+                max={99}
                 required
               />
 
-              <label className="label-description" htmlFor="description">Description:</label>
+              <label className="label-description" htmlFor="description">Description (max 200 chars):</label>
               <textarea 
                 id="description" 
                 className="input-description" 
                 value={form.description} 
                 onChange={onUpdate("description")} 
                 rows="3"
+                maxLength={200}
                 placeholder="Optional description..."
               />
 
-              <label className="label-tags" htmlFor="tags">Tags:</label>
+              <label className="label-tags" htmlFor="tags">Tags (max 3 tags, 10 chars each):</label>
               <input 
                 id="tags" 
                 className="input-tags" 
                 type="text" 
                 value={form.tags} 
                 onChange={onUpdate("tags")} 
-                placeholder="Comma-separated tags (e.g., test, original)"
+                placeholder="tag1, tag2, tag3"
               />
 
-              <label className="label-jacket" htmlFor="jacket">Cover Image (png, jpg, jpeg):</label>
+              <label className="label-jacket" htmlFor="jacket">Cover Image (png):</label>
               <input 
                 id="jacket" 
                 className="input-jacket" 
                 type="file" 
-                accept="image/*" 
+                accept="image/png" 
                 onChange={onUpdate("jacket")} 
                 required
               />
 
-              <label className="label-bgm" htmlFor="bgm">Audio File (mp3, wav, ogg):</label>
+              <label className="label-bgm" htmlFor="bgm">Audio File (mp3):</label>
               <input 
                 id="bgm" 
                 className="input-bgm" 
                 type="file" 
-                accept="audio/*" 
+                accept="audio/mp3" 
                 onChange={onUpdate("bgm")} 
                 required
               />
 
-              <label className="label-chart" htmlFor="chart">Chart File (.SUS or .USC):</label>
+              <label className="label-chart" htmlFor="chart">Chart File (.SUS or .USC or w/o extension):</label>
               <input 
                 id="chart" 
                 className="input-chart" 
                 type="file" 
-                accept=".sus,.usc" 
                 onChange={onUpdate("chart")} 
                 required
               />
@@ -207,7 +216,7 @@ export default function ChartModal({
                 id="preview" 
                 className="input-preview" 
                 type="file" 
-                accept="audio/*" 
+                accept="audio/mp3" 
                 onChange={onUpdate("preview")} 
               />
 
@@ -216,7 +225,7 @@ export default function ChartModal({
                 id="background" 
                 className="input-background" 
                 type="file" 
-                accept="image/*" 
+                accept="image/png" 
                 onChange={onUpdate("background")} 
               />
 

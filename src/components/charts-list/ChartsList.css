@@ -75,12 +75,26 @@
 /* Song Info */
 .song-info {
     display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
+    flex-direction: row;
     padding: 16px 20px;
     flex: 1;
-    justify-content: space-between;
     min-height: 0;
+    gap: 20px;
+}
+
+/* Chart Content (Middle Column) */
+.chart-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 12px;
+}
+
+/* Chart Data */
+.chart-data {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 /* Dashboard Image */
@@ -133,11 +147,17 @@
     text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
 }
 
+/* Audio Section */
+.audio-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 /* Chart Actions */
 .chart-actions {
     display: flex;
     gap: 8px;
-    margin-top: 12px;
     align-self: flex-end;
 }
 
@@ -216,13 +236,21 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+/* Metadata Section (Right Column) */
+.metadata-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+    justify-content: flex-start;
+    min-width: 140px;
+}
+
 /* Chart Metadata */
 .chart-metadata {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    margin-top: 8px;
-    align-self: flex-end;
     text-align: right;
 }
 
@@ -248,4 +276,107 @@
 
 .metadata-item.updated {
     color: hsl(120, 60%, 40%);
+}
+
+/* Status indicators */
+.metadata-item.status {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metadata-item.status-public {
+    color: hsl(120, 60%, 35%);
+    background-color: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.metadata-item.status-private {
+    color: hsl(0, 60%, 45%);
+    background-color: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.metadata-item.status-unlisted {
+    color: hsl(45, 80%, 45%);
+    background-color: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* Visibility Toggle Button */
+
+.visibility-toggle-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: 2px solid;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 70px;
+    min-height: 50px;
+}
+
+.visibility-toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.visibility-toggle-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.visibility-icon {
+    font-size: 16px;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.visibility-text {
+    font-size: 8px;
+    line-height: 1.1;
+    text-align: center;
+}
+
+/* Status-specific button styling */
+.visibility-toggle-btn.status-public {
+    background-color: rgba(34, 197, 94, 0.9);
+    border-color: rgba(34, 197, 94, 1);
+    color: white;
+}
+
+.visibility-toggle-btn.status-public:hover {
+    background-color: rgba(34, 197, 94, 1);
+    border-color: rgba(22, 163, 74, 1);
+}
+
+.visibility-toggle-btn.status-private {
+    background-color: rgba(239, 68, 68, 0.9);
+    border-color: rgba(239, 68, 68, 1);
+    color: white;
+}
+
+.visibility-toggle-btn.status-private:hover {
+    background-color: rgba(239, 68, 68, 1);
+    border-color: rgba(220, 38, 38, 1);
+}
+
+.visibility-toggle-btn.status-unlisted {
+    background-color: rgba(245, 158, 11, 0.9);
+    border-color: rgba(245, 158, 11, 1);
+    color: white;
+}
+
+.visibility-toggle-btn.status-unlisted:hover {
+    background-color: rgba(245, 158, 11, 1);
+    border-color: rgba(217, 119, 6, 1);
 }

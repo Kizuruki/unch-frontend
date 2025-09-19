@@ -10,8 +10,13 @@ export function UserProvider({ children }) {
   const [sonolusUser, setSonolusUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
+  const [isClient, setIsClient] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
 
   const checkAuthStatus = async () => {
+    // Only check auth status on client side
+    if (!isClient) return;
+    
     setLoading(true);
     const sessionValue = localStorage.getItem("session");
     const expiry = localStorage.getItem("expiry");
@@ -60,39 +65,44 @@ export function UserProvider({ children }) {
             setLoading(false);
             return;
           }
-        }
-
-        const meData = await me.json();
-        console.log(meData);
-        
-        try {
-          const targetUrl = `https://service.sonolus.com/users/handle/${meData.sonolus_handle}`;
-          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-          const proxyResponse = await fetch(proxyUrl);
+          // For other HTTP errors, don't clear localStorage
+          // Just log the error and continue
+          console.log('API call failed with status:', me.status);
+        } else {
+          // API call succeeded, process the response
+          const meData = await me.json();
+          console.log(meData);
           
-          if (proxyResponse.ok) {
-            const proxyData = await proxyResponse.json();
-            const sonolusData = JSON.parse(proxyData.contents);
-            console.log('Sonolus data:', sonolusData);
-            setSonolusUser(sonolusData);
-          } else {
-            console.log('AllOrigins failed, trying CORS Anywhere...');
-            const fallbackUrl = `https://cors-anywhere.herokuapp.com/${targetUrl}`;
-            const fallbackResponse = await fetch(fallbackUrl);
-            if (fallbackResponse.ok) {
-              const sonolusData = await fallbackResponse.json();
-              console.log('Sonolus data (via CORS Anywhere):', sonolusData);
+          try {
+            const targetUrl = `https://service.sonolus.com/users/handle/${meData.sonolus_handle}`;
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+            const proxyResponse = await fetch(proxyUrl);
+            
+            if (proxyResponse.ok) {
+              const proxyData = await proxyResponse.json();
+              const sonolusData = JSON.parse(proxyData.contents);
+              console.log('Sonolus data:', sonolusData);
               setSonolusUser(sonolusData);
+            } else {
+              console.log('AllOrigins failed, trying CORS Anywhere...');
+              const fallbackUrl = `https://cors-anywhere.herokuapp.com/${targetUrl}`;
+              const fallbackResponse = await fetch(fallbackUrl);
+              if (fallbackResponse.ok) {
+                const sonolusData = await fallbackResponse.json();
+                console.log('Sonolus data (via CORS Anywhere):', sonolusData);
+                setSonolusUser(sonolusData);
+              }
             }
+          } catch (error) {
+            console.log('Error fetching Sonolus data:', error);
           }
-        } catch (error) {
-          console.log('Error fetching Sonolus data:', error);
         }
 
       } catch (error) {
         console.log('Error fetching user data:', error);
         // If there's a network error, don't clear the session
         // The user might just be offline
+        // Keep the user logged in with their existing session
       }
     } else {
       setIsLoggedIn(false);
@@ -101,6 +111,7 @@ export function UserProvider({ children }) {
     }
     
     setLoading(false);
+    setSessionReady(true); // Session evaluation is complete
   };
 
   const handleLogout = () => {
@@ -109,6 +120,7 @@ export function UserProvider({ children }) {
     setIsLoggedIn(false);
     setSonolusUser(null);
     setSession(null);
+    setSessionReady(true); // Session is now in a known state (logged out)
     // Dispatch event to notify other components
     window.dispatchEvent(new CustomEvent('authChange'));
   };
@@ -119,6 +131,9 @@ export function UserProvider({ children }) {
 
   // Function to check if session is still valid
   const isSessionValid = () => {
+    // Only check session validity on client side
+    if (!isClient) return false;
+    
     const sessionValue = localStorage.getItem("session");
     const expiry = localStorage.getItem("expiry");
     
@@ -140,11 +155,20 @@ export function UserProvider({ children }) {
     setIsLoggedIn(false);
     setSonolusUser(null);
     setSession(null);
+    setSessionReady(true); // Session is now in a known state (logged out)
     // Dispatch event to notify other components
     window.dispatchEvent(new CustomEvent('authChange'));
   };
 
   useEffect(() => {
+    // Set client flag to true after component mounts
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    // Only run auth checks after client-side mounting
+    if (!isClient) return;
+    
     checkAuthStatus();
     
     // Set up periodic session check (every 5 minutes)
@@ -166,13 +190,15 @@ export function UserProvider({ children }) {
       window.removeEventListener('storage', checkAuthStatus);
       window.removeEventListener('authChange', handleAuthChange);
     };
-  }, [isLoggedIn]);
+  }, [isClient, isLoggedIn]);
 
   const value = {
     isLoggedIn,
     sonolusUser,
     loading,
     session,
+    isClient,
+    sessionReady,
     handleLogout,
     refreshUser,
     isSessionValid,

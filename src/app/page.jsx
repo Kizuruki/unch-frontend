@@ -10,7 +10,7 @@ import { useUser } from "../contexts/UserContext";
 
 
 export default function Home() {
-  const { sonolusUser, session, isSessionValid, clearExpiredSession } = useUser();
+  const { sonolusUser, session, isSessionValid, clearExpiredSession, isClient } = useUser();
   
   // Unified section state
   const [sectionMode, setSectionMode] = useState("myCharts"); // "myCharts" or "search"
@@ -33,7 +33,6 @@ export default function Home() {
   const [artistsIncludes, setArtistsIncludes] = useState("");
   const [sortBy, setSortBy] = useState("created_at");
   const [sortOrder, setSortOrder] = useState("desc");
-  const [status, setStatus] = useState("PUBLIC");
   const [metaIncludes, setMetaIncludes] = useState("");
 
   // Unified posts state
@@ -74,7 +73,6 @@ export default function Home() {
         if (artistsIncludes) params.append('artists_includes', artistsIncludes);
         params.append('sort_by', sortBy);
         params.append('sort_order', sortOrder);
-        params.append('status', status);
         if (metaIncludes) params.append('meta_includes', metaIncludes);
       }
       
@@ -89,13 +87,14 @@ export default function Home() {
         id: item.id,
         title: item.title,
         artists: item.artists,
-        author: item.author_full || item.author,
+        author: item.author_full,
+        authorId: item.author,
         rating: item.rating,
         description: item.description,
         tags: item.tags,
         coverUrl: item.jacket_file_hash ? `${BASE}/${item.author}/${item.id}/${item.jacket_file_hash}` : "",
         bgmUrl: item.music_file_hash ? `${BASE}/${item.author}/${item.id}/${item.music_file_hash}` : "",
-        backgroundUrl: item.background_file_hash ? `${BASE}/${item.author}/${item.id}/${item.background_file_hash}` : "",
+        backgroundUrl: item.background_file_hash ? `${BASE}/${item.author}/${item.id}/${item.background_file_hash}` : `${BASE}/sonolus/repository/1abfcce9c2bc2c41c1ddeaabb6ada4bad8f3e020`,
         chartUrl: item.chart_file_hash ? `${BASE}/${item.author}/${item.id}/${item.chart_file_hash}` : "",
         likeCount: item.like_count,
         createdAt: item.created_at,
@@ -142,7 +141,7 @@ export default function Home() {
         tags: item.tags,
         coverUrl: item.jacket_file_hash ? `${BASE}/${item.author}/${item.id}/${item.jacket_file_hash}` : "",
         bgmUrl: item.music_file_hash ? `${BASE}/${item.author}/${item.id}/${item.music_file_hash}` : "",
-        backgroundUrl: item.background_file_hash ? `${BASE}/${item.author}/${item.id}/${item.background_file_hash}` : "",
+        backgroundUrl: item.background_file_hash ? `${BASE}/${item.author}/${item.id}/${item.background_file_hash}` : `${BASE}/sonolus/repository/1abfcce9c2bc2c41c1ddeaabb6ada4bad8f3e020`,
         chartUrl: item.chart_file_hash ? `${BASE}/${item.author}/${item.id}/${item.chart_file_hash}` : "",
         likeCount: item.like_count,
         createdAt: item.created_at,
@@ -373,15 +372,6 @@ export default function Home() {
                       />
                     </div>
                     
-                    <div className="search-field">
-                      <label>Status:</label>
-                      <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                        <option value="PUBLIC">Public</option>
-                        <option value="UNLISTED">Unlisted</option>
-                        <option value="PRIVATE">Private</option>
-                        <option value="ALL">All</option>
-                      </select>
-                    </div>
                   </>
                 )}
 

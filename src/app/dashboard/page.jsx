@@ -9,7 +9,7 @@ import { useUser } from "../../contexts/UserContext";
 const APILink = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Dashboard() {
-  const { sonolusUser, session, isSessionValid, clearExpiredSession } = useUser();
+  const { sonolusUser, session, isSessionValid, clearExpiredSession, isClient, sessionReady } = useUser();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -42,10 +42,29 @@ export default function Dashboard() {
     setLoading(true);
     setError(null);
     
+    // Don't make API calls until client-side mounting is complete
+    if (!isClient) {
+      setLoading(false);
+      return;
+    }
+    
+    // Don't make API calls until session has been properly evaluated
+    if (!sessionReady) {
+      setLoading(false);
+      return;
+    }
+    
     // Check if session is still valid before making API call
     if (!isSessionValid()) {
       console.log('Session expired, clearing data');
       clearExpiredSession();
+      setLoading(false);
+      return;
+    }
+    
+    // Ensure we have a session token before making the API call
+    if (!session) {
+      console.log('No session token available, skipping API call');
       setLoading(false);
       return;
     }
@@ -79,17 +98,19 @@ export default function Dashboard() {
         id: item.id,
         title: item.title,
         artists: item.artists,
-        author: item.author_full || item.author,
+        author: item.author_full,
+        authorId: item.author,
         rating: item.rating,
         description: item.description,
         tags: item.tags,
         coverUrl: item.jacket_file_hash ? `${BASE}/${item.author}/${item.id}/${item.jacket_file_hash}` : "",
         bgmUrl: item.music_file_hash ? `${BASE}/${item.author}/${item.id}/${item.music_file_hash}` : "",
-        backgroundUrl: item.background_file_hash ? `${BASE}/${item.author}/${item.id}/${item.background_file_hash}` : "",
+        backgroundUrl: item.background_file_hash ? `${BASE}/${item.author}/${item.id}/${item.background_file_hash}` : `${BASE}/${item.author}/${item.id}/background_v3_file_hash`,
         chartUrl: item.chart_file_hash ? `${BASE}/${item.author}/${item.id}/${item.chart_file_hash}` : "",
         likeCount: item.like_count,
         createdAt: item.created_at,
         updatedAt: item.updated_at,
+        status: item.status,
       }));
 
       setPosts(normalized);
@@ -104,8 +125,11 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    handleMyCharts();
-  }, []);
+    // Only fetch data after client-side mounting and session is ready
+    if (isClient && sessionReady) {
+      handleMyCharts();
+    }
+  }, [isClient, sessionReady]);
 
 
   const openUpload = () => {
@@ -192,10 +216,30 @@ export default function Dashboard() {
       setLoading(true);
       setError(null);
 
+      // Don't proceed if not on client side
+      if (!isClient) {
+        setLoading(false);
+        return;
+      }
+      
+      // Don't proceed until session is ready
+      if (!sessionReady) {
+        setLoading(false);
+        return;
+      }
+      
       // Check if session is still valid
       if (!isSessionValid()) {
         console.log('Session expired, clearing data');
         clearExpiredSession();
+        setLoading(false);
+        return;
+      }
+      
+      // Ensure we have a session token
+      if (!session) {
+        console.log('No session token available');
+        setError('No session token available');
         setLoading(false);
         return;
       }
@@ -207,13 +251,53 @@ export default function Dashboard() {
         return;
       }
 
+      // Validate field lengths
+      if (form.title.length > 50) {
+        setError("Title must be 50 characters or less.");
+        setLoading(false);
+        return;
+      }
+      if (form.artists.length > 50) {
+        setError("Artists must be 50 characters or less.");
+        setLoading(false);
+        return;
+      }
+      if (form.author.length > 20) {
+        setError("Chart Designer must be 20 characters or less.");
+        setLoading(false);
+        return;
+      }
+      if (form.description && form.description.length > 200) {
+        setError("Description must be 200 characters or less.");
+        setLoading(false);
+        return;
+      }
+
+      // Validate tags
+      let tags = [];
+      if (form.tags) {
+        tags = form.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+        if (tags.length > 3) {
+          setError("Maximum 3 tags allowed.");
+          setLoading(false);
+          return;
+        }
+        for (const tag of tags) {
+          if (tag.length > 10) {
+            setError(`Tag "${tag}" must be 10 characters or less.`);
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
       // Prepare chart data
       const chartData = {
         rating: parseInt(form.rating),
         title: form.title,
         artists: form.artists,
         author: form.author,
-        tags: form.tags ? form.tags.split(',').map(tag => tag.trim()) : [],
+        tags: tags,
         includes_background: !!form.background,
         includes_preview: !!form.preview,
       };
@@ -314,6 +398,102 @@ export default function Dashboard() {
     audioRefs.current[postId] = audioElement;
   }, []);
 
+  const handleVisibilityChange = async (chartId, currentStatus) => {
+    // Determine next status in cycle: PRIVATE -> PUBLIC -> UNLISTED -> PRIVATE
+    let nextStatus;
+    switch (currentStatus) {
+      case 'PRIVATE':
+        nextStatus = 'PUBLIC';
+        break;
+      case 'PUBLIC':
+        nextStatus = 'UNLISTED';
+        break;
+      case 'UNLISTED':
+        nextStatus = 'PRIVATE';
+        break;
+      default:
+        nextStatus = 'PRIVATE';
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Don't proceed if not on client side
+      if (!isClient) {
+        setLoading(false);
+        return;
+      }
+      
+      // Don't proceed until session is ready
+      if (!sessionReady) {
+        setLoading(false);
+        return;
+      }
+      
+      // Check if session is still valid
+      if (!isSessionValid()) {
+        console.log('Session expired, clearing data');
+        clearExpiredSession();
+        setLoading(false);
+        return;
+      }
+      
+      // Ensure we have a session token
+      if (!session) {
+        console.log('No session token available');
+        setError('No session token available');
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${APILink}/api/charts/${chartId}/visibility/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': session
+        },
+        body: JSON.stringify({
+          status: nextStatus
+        })
+      });
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          console.log('Visibility change failed due to expired session');
+          clearExpiredSession();
+          setLoading(false);
+          return;
+        }
+        const errorText = await response.text();
+        throw new Error(`Visibility change failed: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('Visibility change successful:', result);
+
+      // Refresh the chart list to show updated status
+      await handleMyCharts(currentPage);
+
+    } catch (err) {
+      console.error('Visibility change error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+          // Show loading state while client-side mounting or session is not ready
+          if (!isClient || !sessionReady) {
+            return (
+              <main>
+                <div className="loading-container">
+                  <p>Loading...</p>
+                </div>
+              </main>
+            );
+          }
+
           if (error) return <main><p>Error: {error}</p></main>
 
           return (
@@ -354,6 +534,7 @@ export default function Dashboard() {
               onAudioRef={handleAudioRef}
               onEdit={openEdit}
               sonolusUser={sonolusUser}
+              onVisibilityChange={handleVisibilityChange}
             />
           </div>
         </div>

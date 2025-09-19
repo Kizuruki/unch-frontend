@@ -1,5 +1,8 @@
 "use client";
+import { useState, useRef } from "react";
 import "./ChartModal.css";
+import AudioControls from "../audio-control/AudioControls";
+import AudioVisualizer from "../audio-visualizer/AudioVisualizer";
 
 export default function ChartModal({ 
   isOpen, 
@@ -8,15 +11,45 @@ export default function ChartModal({
   onClose, 
   onSubmit, 
   onUpdate,
-  loading = false
+  loading = false,
+  editData = null
 }) {
+  // Audio state for edit mode previews
+  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+  const audioRefs = useRef({});
+
+  const handlePlay = (audioId) => {
+    // Stop any currently playing audio
+    if (currentlyPlaying && currentlyPlaying !== audioId) {
+      const currentAudio = audioRefs.current[currentlyPlaying];
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+    }
+    setCurrentlyPlaying(audioId);
+  };
+
+  const handleStop = (audioId) => {
+    setCurrentlyPlaying(null);
+  };
+
+  const handleAudioRef = (audioId, ref) => {
+    audioRefs.current[audioId] = ref;
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay">
       <div className="edit-container">
         <div className="modal-header">
-          <strong>{mode === "edit" ? "Edit data" : "Upload New Level"}</strong>
+          <strong>
+            {mode === "edit" 
+              ? (editData && editData.title ? `Edit: ${editData.title}` : "Edit Chart") 
+              : "Upload New Level"
+            }
+          </strong>
           <button type="button" onClick={onClose} aria-label="Close" className="close-btn">✕</button>
         </div>
         <div className="modal-content">
@@ -92,6 +125,12 @@ export default function ChartModal({
                 accept="image/png" 
                 onChange={onUpdate("jacket")} 
               />
+              {editData && editData.jacketUrl && !form.jacket && (
+                <div className="file-preview">
+                  <img src={editData.jacketUrl} alt="Current jacket" style={{maxWidth: '100px', maxHeight: '100px'}} />
+                  <span>Current: {editData.jacketUrl.split('/').pop()}</span>
+                </div>
+              )}
 
               <label className="label-bgm" htmlFor="bgm">Audio:</label>
               <input 
@@ -101,6 +140,27 @@ export default function ChartModal({
                 accept="audio/mp3" 
                 onChange={onUpdate("bgm")} 
               />
+              {editData && editData.bgmUrl && !form.bgm && (
+                <div className="file-preview">
+                  <span>Current: {editData.bgmUrl.split('/').pop()}</span>
+                  <div className="audio-preview-container">
+                    <AudioControls
+                      bgmUrl={editData.bgmUrl}
+                      onPlay={() => handlePlay('edit-bgm')}
+                      onStop={() => handleStop('edit-bgm')}
+                      isPlaying={currentlyPlaying === 'edit-bgm'}
+                      isActive={currentlyPlaying === 'edit-bgm'}
+                      audioRef={(ref) => handleAudioRef('edit-bgm', ref)}
+                    />
+                    {currentlyPlaying === 'edit-bgm' && (
+                      <AudioVisualizer
+                        audioRef={audioRefs.current['edit-bgm']}
+                        isPlaying={currentlyPlaying === 'edit-bgm'}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
 
               <label className="label-chart" htmlFor="chart">Chart (.SUS or .USC or w/o extension):</label>
               <input 
@@ -109,6 +169,56 @@ export default function ChartModal({
                 type="file" 
                 onChange={onUpdate("chart")} 
               />
+              {editData && editData.chartUrl && !form.chart && (
+                <div className="file-preview">
+                  <span>Current: {editData.chartUrl.split('/').pop()}</span>
+                </div>
+              )}
+
+              <label className="label-preview" htmlFor="preview">Preview Audio (optional):</label>
+              <input 
+                id="preview" 
+                className="input-preview" 
+                type="file" 
+                accept="audio/mp3" 
+                onChange={onUpdate("preview")} 
+              />
+              {editData && editData.previewUrl && !form.preview && (
+                <div className="file-preview">
+                  <span>Current: {editData.previewUrl.split('/').pop()}</span>
+                  <div className="audio-preview-container">
+                    <AudioControls
+                      bgmUrl={editData.previewUrl}
+                      onPlay={() => handlePlay('edit-preview')}
+                      onStop={() => handleStop('edit-preview')}
+                      isPlaying={currentlyPlaying === 'edit-preview'}
+                      isActive={currentlyPlaying === 'edit-preview'}
+                      audioRef={(ref) => handleAudioRef('edit-preview', ref)}
+                    />
+                    {currentlyPlaying === 'edit-preview' && (
+                      <AudioVisualizer
+                        audioRef={audioRefs.current['edit-preview']}
+                        isPlaying={currentlyPlaying === 'edit-preview'}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <label className="label-background" htmlFor="background">Background Image (optional):</label>
+              <input 
+                id="background" 
+                className="input-background" 
+                type="file" 
+                accept="image/png" 
+                onChange={onUpdate("background")} 
+              />
+              {editData && editData.backgroundUrl && !form.background && (
+                <div className="file-preview">
+                  <img src={editData.backgroundUrl} alt="Current background" style={{maxWidth: '200px', maxHeight: '100px', objectFit: 'cover'}} />
+                  <span>Current: {editData.backgroundUrl.split('/').pop()}</span>
+                </div>
+              )}
 
               <button className="edit-save-btn" type="submit">Save</button>
             </form>

@@ -19,6 +19,7 @@ export default function Dashboard() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState(null);
+  const [editData, setEditData] = useState(null);
   
   // Audio state management
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
@@ -107,6 +108,7 @@ export default function Dashboard() {
         bgmUrl: item.music_file_hash ? `${BASE}/${item.author}/${item.id}/${item.music_file_hash}` : "",
         backgroundUrl: item.background_file_hash ? `${BASE}/${item.author}/${item.id}/${item.background_file_hash}` : `${BASE}/${item.author}/${item.id}/background_v3_file_hash`,
         chartUrl: item.chart_file_hash ? `${BASE}/${item.author}/${item.id}/${item.chart_file_hash}` : "",
+        previewUrl: item.preview_file_hash ? `${BASE}/${item.author}/${item.id}/${item.preview_file_hash}` : "",
         likeCount: item.like_count,
         createdAt: item.created_at,
         updatedAt: item.updated_at,
@@ -166,6 +168,15 @@ export default function Dashboard() {
         preview: null,
         background: null,
     });
+    setEditData({
+        id: post.id,
+        title: post.title,
+        jacketUrl: post.coverUrl,
+        bgmUrl: post.bgmUrl,
+        chartUrl: post.chartUrl,
+        previewUrl: post.previewUrl,
+        backgroundUrl: post.backgroundUrl,
+    });
     setError(null); // Clear any previous errors
     setIsOpen(true);
   };
@@ -173,6 +184,7 @@ export default function Dashboard() {
   const closePanel = () => {
     setIsOpen(false);
     setMode(null);
+    setEditData(null);
     setError(null); // Clear any errors when closing
     // Reset form to clean state
     setForm({
@@ -206,8 +218,183 @@ export default function Dashboard() {
     if (mode === "upload") {
       await handleUpload();
     } else if (mode === "edit") {
-      // TODO: Implement edit functionality
-      console.log("Edit mode not implemented yet", form);
+      await handleEdit();
+    }
+  };
+
+  const handleEdit = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Don't proceed if not on client side
+      if (!isClient) {
+        setLoading(false);
+        return;
+      }
+      
+      // Don't proceed until session is ready
+      if (!sessionReady) {
+        setLoading(false);
+        return;
+      }
+      
+      // Check if session is still valid
+      if (!isSessionValid()) {
+        console.log('Session expired, clearing data');
+        clearExpiredSession();
+        setLoading(false);
+        return;
+      }
+      
+      // Ensure we have a session token
+      if (!session) {
+        console.log('No session token available');
+        setError('No session token available');
+        setLoading(false);
+        return;
+      }
+
+      if (!editData || !editData.id) {
+        setError('No chart selected for editing');
+        setLoading(false);
+        return;
+      }
+
+      // Validate field lengths
+      if (form.title && form.title.length > 50) {
+        setError("Title must be 50 characters or less.");
+        setLoading(false);
+        return;
+      }
+      if (form.artists && form.artists.length > 50) {
+        setError("Artists must be 50 characters or less.");
+        setLoading(false);
+        return;
+      }
+      if (form.author && form.author.length > 20) {
+        setError("Chart Designer must be 20 characters or less.");
+        setLoading(false);
+        return;
+      }
+      if (form.description && form.description.length > 200) {
+        setError("Description must be 200 characters or less.");
+        setLoading(false);
+        return;
+      }
+
+      // Validate tags
+      let tags = [];
+      if (form.tags && typeof form.tags === 'string' && form.tags.trim()) {
+        tags = form.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+        if (tags.length > 3) {
+          setError("Maximum 3 tags allowed.");
+          setLoading(false);
+          return;
+        }
+        for (const tag of tags) {
+          if (tag.length > 10) {
+            setError(`Tag "${tag}" must be 10 characters or less.`);
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
+      // Prepare chart data - only include fields that have values
+      const chartData = {};
+      
+      if (form.title) chartData.title = form.title;
+      if (form.artists) chartData.artists = form.artists;
+      if (form.author) chartData.author = form.author;
+      if (form.rating) chartData.rating = parseInt(form.rating);
+      if (form.description) chartData.description = form.description;
+      if (tags.length > 0) chartData.tags = tags;
+
+      // File inclusion flags
+      if (form.jacket) chartData.includes_jacket = true;
+      if (form.bgm) chartData.includes_audio = true;
+      if (form.chart) chartData.includes_chart = true;
+      if (form.preview) chartData.includes_preview = true;
+      if (form.background) chartData.includes_background = true;
+
+      // Create FormData
+      const formData = new FormData();
+      formData.append('data', JSON.stringify(chartData));
+
+      // Add files only if they exist
+      if (form.jacket) {
+        formData.append('jacket_image', form.jacket);
+      }
+      if (form.bgm) {
+        formData.append('audio_file', form.bgm);
+      }
+      if (form.chart) {
+        formData.append('chart_file', form.chart);
+      }
+      if (form.preview) {
+        formData.append('preview_file', form.preview);
+      }
+      if (form.background) {
+        formData.append('background_image', form.background);
+      }
+
+      console.log("chartData", chartData);
+
+      formData.forEach((value, key, parent) => {
+        console.log("value", value);
+        console.log("key", key);
+        console.log("parent", parent);
+      });
+
+      // Make the edit request
+      const response = await fetch(`${APILink}/api/charts/${editData.id}/edit/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': session
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          console.log('Edit failed due to expired session');
+          clearExpiredSession();
+          setLoading(false);
+          return;
+        }
+        const errorText = await response.text();
+        throw new Error(`Edit failed: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('Edit successful:', result);
+
+      // Close modal, clear form, and refresh chart list
+      setIsOpen(false);
+      setMode(null);
+      setEditData(null);
+      setError(null);
+      setForm({
+        title: "",
+        artists: "",
+        author: "",
+        rating: "",
+        description: "",
+        tags: "",
+        jacket: null,
+        bgm: null,
+        chart: null,
+        preview: null,
+        background: null,
+      });
+      await handleMyCharts(currentPage);
+
+    } catch (err) {
+      console.error('Edit error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -553,6 +740,7 @@ export default function Dashboard() {
                   onSubmit={onSubmit}
                   onUpdate={update}
                   loading={loading}
+                  editData={editData}
                 />
       </div>
     </main>

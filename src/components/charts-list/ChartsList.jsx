@@ -5,19 +5,20 @@ import AudioControls from "../audio-control/AudioControls";
 import AudioVisualizer from "../audio-visualizer/AudioVisualizer";
 import "./ChartsList.css";
 
-export default function ChartsList({ 
-  posts, 
-  loading, 
-  currentlyPlaying, 
+export default function ChartsList({
+  posts,
+  loading,
+  currentlyPlaying,
   audioRefs,
-  onPlay, 
-  onStop, 
-  onAudioRef, 
+  onPlay,
+  onStop,
+  onAudioRef,
   onEdit,
   sonolusUser,
-  onVisibilityChange
+  onVisibilityChange,
+  onDelete
 }) {
-  console.log(posts, sonolusUser)
+  console.log(posts, sonolusUser);
   if (loading) {
     return (
       <div className="loading-container">
@@ -25,18 +26,26 @@ export default function ChartsList({
       </div>
     );
   }
-  
+
+
+
   return (
     <ul className="songlist">
-      {posts.map((post) => (
-        <li 
-          key={post.id} 
+      {posts.map((post) => {
+          const canSeeVisibilityChange = sonolusUser &&
+                sonolusUser.id === post.authorId &&
+                post.status &&
+                onVisibilityChange;
+        return <li
+          key={post.id}
           className="dashboard-li"
           style={{
-            backgroundImage: post.backgroundUrl ? `url(${post.backgroundUrl})` : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
+            backgroundImage: post.backgroundUrl
+              ? `url(${post.backgroundUrl})`
+              : "none",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
           }}
         >
           <Link
@@ -66,7 +75,7 @@ export default function ChartsList({
                 <span className="rating-dashboard">Lv.{post.rating}</span>
                 <span className="author-dashboard">by {post.author}</span>
               </div>
-              
+
               <div className="audio-section">
                 <AudioControls
                   bgmUrl={post.bgmUrl}
@@ -83,29 +92,35 @@ export default function ChartsList({
                   />
                 )}
               </div>
-              
             </div>
-            
+
             <div className="metadata-section">
               <div className="chart-actions">
                 {sonolusUser && sonolusUser.id === post.authorId && (
                   <>
-                    <button className="edit-btn" type="button" onClick={() => onEdit(post)} title="Edit">
+                    <button
+                      className="edit-btn"
+                      type="button"
+                      onClick={() => onEdit(post)}
+                      title="Edit"
+                    >
                       <Pencil size={16} />
                     </button>
-                    <button className="delete-btn" type="button" title="Delete">
+                    <button className="delete-btn" type="button" title="Delete" onClick={() => onDelete(post)}>
                       <Trash2 size={16} />
                     </button>
                   </>
                 )}
               </div>
-              
+
               <div className="chart-metadata">
                 {post.status && (
-                  <span className={`metadata-item status status-${post.status.toLowerCase()}`}>
-                    {post.status === 'PUBLIC' && '🌐'}
-                    {post.status === 'PRIVATE' && '🔒'}
-                    {post.status === 'UNLISTED' && '🔗'}
+                  <span
+                    className={`metadata-item status status-${post.status.toLowerCase()}`}
+                  >
+                    {post.status === "PUBLIC" && "🌐"}
+                    {post.status === "PRIVATE" && "🔒"}
+                    {post.status === "UNLISTED" && "🔗"}
                     {post.status}
                   </span>
                 )}
@@ -125,30 +140,45 @@ export default function ChartsList({
                   </span>
                 )}
               </div>
-              
+
               {/* Visibility Toggle Button */}
-              {sonolusUser && sonolusUser.id === post.authorId && post.status && onVisibilityChange && (
-                <button 
-                  className={`visibility-toggle-btn status-${post.status.toLowerCase()}`}
-                  onClick={() => onVisibilityChange(post.id, post.status)}
-                  title={`Change visibility (currently ${post.status})`}
-                >
-                  <span className="visibility-icon">
-                    {post.status === 'PUBLIC' && '🌐'}
-                    {post.status === 'PRIVATE' && '🔒'}
-                    {post.status === 'UNLISTED' && '🔗'}
-                  </span>
-                  <span className="visibility-text">
-                    {post.status === 'PUBLIC' && 'Make Private'}
-                    {post.status === 'PRIVATE' && 'Make Public'}
-                    {post.status === 'UNLISTED' && 'Make Private'}
-                  </span>
-                </button>
-              )}
+              <div className="visibility-toggles">
+                {canSeeVisibilityChange && post.status != "PUBLIC" && (
+                  <ChartAction post={post} onVisibilityChange={onVisibilityChange} intent={"PUBLIC"}></ChartAction>
+                )}
+                {canSeeVisibilityChange && post.status != "PRIVATE" && (
+                  <ChartAction post={post} onVisibilityChange={onVisibilityChange} intent={"PRIVATE"}></ChartAction>
+                )}  
+                {canSeeVisibilityChange && post.status != "UNLISTED" && (
+                  <ChartAction post={post} onVisibilityChange={onVisibilityChange} intent={"UNLISTED"}></ChartAction>
+                )}
+              </div>
             </div>
           </div>
-        </li>
-      ))}
+          </li>
+        }
+      )}
     </ul>
+  );
+}
+
+function ChartAction({ post, onVisibilityChange, intent }) {
+  return (
+    <button
+      className={`visibility-toggle-btn status-${intent.toLowerCase()}`}
+      onClick={() => onVisibilityChange(post.id, post.status, intent)}
+      title={`Change visibility (currently ${post.status})`}
+    >
+      <span className="visibility-icon">
+        {intent === "PUBLIC" && "🌐"}
+        {intent === "PRIVATE" && "🔒"}
+        {intent === "UNLISTED" && "🔗"}
+      </span>
+      <span className="visibility-text">
+        {intent === "PUBLIC" && "Make Public"}
+        {intent === "PRIVATE" && "Make Private"}
+        {intent === "UNLISTED" && "Make Unlisted"}
+      </span>
+    </button>
   );
 }

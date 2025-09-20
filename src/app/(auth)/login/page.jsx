@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 
 export default function Login() {
   const router = useRouter();
-  const [isWaiting, setIsWaiting] = useState(true)
-  const [sessionId, setSessionId] = useState(null)
+  const [isWaiting, setIsWaiting] = useState(false);
+  const [externalLoginId, setExternalLoginId] = useState(null); // Track external login id
   const {
     sonolusUser,
     session,
@@ -17,6 +17,7 @@ export default function Login() {
     isClient,
     sessionReady,
   } = useUser();
+
   useEffect(() => {
     if (!sessionReady) return;
 
@@ -30,66 +31,79 @@ export default function Login() {
   const sonolusServerUrl = process.env['NEXT_PUBLIC_SONOLUS_SERVER_URL'];
   const apiUrl = process.env['NEXT_PUBLIC_API_URL'];
 
-  const onSubmit = async e => {
-    e.preventDefault()
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setIsWaiting(true); // Set to waiting when the user clicks
     try {
-      const apiUrlNoHTTPS = apiUrl.replace("http://", "").replace("https://", "")
-      const sonolusServerUrlNoHTTPS = sonolusServerUrl.replace("http://", "").replace("https://", "")
-      const { id } = await (await fetch(`${apiUrl}/api/accounts/session/external/id`, { method: "POST" })).json()
+      const { id } = await (await fetch(`${apiUrl}/api/accounts/session/external/id`, { method: "POST" })).json();
+      const [_proto, host] = sonolusServerUrl.split("://");
 
-      const [_proto, host] = sonolusServerUrl.split("://")
-      window.open(`https://open.sonolus.com/external-login/${host}/sonolus/authenticate_external?id=${id}`, "_blank", "noopener,noreferrer")
+      // Set the external login ID
+      setExternalLoginId(id);
 
-      setSessionId(id)
-      setIsWaiting(true)
+      // Open the window directly
+      window.open(`https://open.sonolus.com/external-login/${host}/sonolus/authenticate_external?id=${id}`, "_blank", "noopener,noreferrer");
     } catch (e) {
-      console.log(e)
+      console.log(e);
+      setIsWaiting(false); // Stop waiting in case of error
     }
-  }
+  };
 
   useEffect(() => {
-    if (!isWaiting || !sessionId) return
+    if (!isWaiting || !externalLoginId) return;
 
     const interval = setInterval(async () => {
-      const res = await fetch(`${apiUrl}/api/accounts/session/external/get?id=${sessionId}`)
+      const res = await fetch(`${apiUrl}/api/accounts/session/external/get?id=${externalLoginId}`);
 
       if (res.status === 202) {
-        const { session_key, expiry } = await res.json()
+        const { session_key, expiry } = await res.json();
 
-        localStorage.setItem("session", session_key)
-        localStorage.setItem("expiry", expiry)
+        localStorage.setItem("session", session_key);
+        localStorage.setItem("expiry", expiry);
 
         // Dispatch custom event to notify layout of auth change
-        window.dispatchEvent(new CustomEvent('authChange'))
+        window.dispatchEvent(new CustomEvent('authChange'));
 
-        setIsWaiting(false)
+        setIsWaiting(false);
         router.push("/dashboard");
       } else if (res.status === 404) {
-        console.error("expired")
-        setIsWaiting(false)
+        console.error("Session expired");
+        setIsWaiting(false);
       }
-    }, 1000)
+    }, 1000);
 
-    return () => clearInterval(interval)
-  }, [isWaiting, sessionId])
+    return () => clearInterval(interval);
+  }, [isWaiting, externalLoginId]);
 
   return (
     <main>
       <div className="login-container">
         <div className="login-box">
           <h1>UntitledCharts</h1>
-          {isWaiting ? (<p>Waiting for server response...</p>) : (<>
+          {isWaiting ? (
+            <div>
+              <p>Waiting for authentication response...</p>
+              {externalLoginId && ( // Only show the button if externalLoginId is not null
+                <button
+                  onClick={() => {
+                    const [_proto, host] = sonolusServerUrl.split("://");
+                    window.open(`https://open.sonolus.com/external-login/${host}/sonolus/authenticate_external?id=${externalLoginId}`, "_blank", "noopener,noreferrer");
+                  }}
+                  className="login-btn"
+                >
+                  Open Sonolus Login Link
+                </button>
+              )}
+            </div>
+          ) : (
             <form onSubmit={onSubmit}>
-
-              {/* <label htmlFor="email">Email</label>
-            <input type="email" id="email" name="email" required />
-            <label htmlFor="password">Password</label>
-            <input type="password" id="password" name="password" required /> */}
-              <button type="submit" className="login-btn">Log In via Sonolus</button>
+              <button type="submit" className="login-btn">
+                Log In via Sonolus
+              </button>
             </form>
-          </>)}
+          )}
         </div>
       </div>
-    </main >
+    </main>
   );
 }

@@ -80,7 +80,7 @@ export default function ChartModal({
                 id="author" 
                 className="input-charter" 
                 type="text"
-                value={form.author_field} 
+                value={form.author} 
                 onChange={onUpdate("author")} 
                 maxLength={20}
               />

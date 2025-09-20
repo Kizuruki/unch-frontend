@@ -185,7 +185,7 @@ export default function Dashboard() {
     setForm({
       title: post.title,
       artists: post.artists,
-      author: post.author,
+      author: post.author_field,
       rating: String(post.rating ?? ""),
       description: post.description || "",
       tags: post.tags || "",

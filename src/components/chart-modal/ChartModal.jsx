@@ -79,8 +79,8 @@ export default function ChartModal({
               <input 
                 id="author" 
                 className="input-charter" 
-                type="text" 
-                value={form.author} 
+                type="text"
+                value={form.author.replace(/#\d+$/, '')} 
                 onChange={onUpdate("author")} 
                 maxLength={20}
               />
@@ -213,7 +213,7 @@ export default function ChartModal({
                 accept="image/png" 
                 onChange={onUpdate("background")} 
               />
-              {editData && editData.backgroundUrl && !form.background && (
+              {editData && editData.backgroundUrl && editData.has_bg && !form.background && (
                 <div className="file-preview">
                   <img src={editData.backgroundUrl} alt="Current background" style={{maxWidth: '200px', maxHeight: '100px', objectFit: 'cover'}} />
                   <span>Current: {editData.backgroundUrl.split('/').pop()}</span>
@@ -271,14 +271,14 @@ export default function ChartModal({
                 required
               />
 
-              <label className="label-description" htmlFor="description">Description (max 200 chars):</label>
+              <label className="label-description" htmlFor="description">Description (max 250 chars):</label>
               <textarea 
                 id="description" 
                 className="input-description" 
                 value={form.description} 
                 onChange={onUpdate("description")} 
                 rows="3"
-                maxLength={200}
+                maxLength={250}
                 placeholder="Optional description..."
               />
 
@@ -312,7 +312,7 @@ export default function ChartModal({
                 required
               />
 
-              <label className="label-chart" htmlFor="chart">Chart File (.SUS or .USC or w/o extension):</label>
+              <label className="label-chart" htmlFor="chart">Chart File (.SUS or .USC or LevelData):</label>
               <input 
                 id="chart" 
                 className="input-chart" 
@@ -321,7 +321,7 @@ export default function ChartModal({
                 required
               />
 
-              <label className="label-preview" htmlFor="preview">Preview Audio (optional):</label>
+              <label className="label-preview" htmlFor="preview">Preview Audio (optional mp3):</label>
               <input 
                 id="preview" 
                 className="input-preview" 
@@ -330,7 +330,7 @@ export default function ChartModal({
                 onChange={onUpdate("preview")} 
               />
 
-              <label className="label-background" htmlFor="background">Background Image (optional):</label>
+              <label className="label-background" htmlFor="background">Background Image (optional png):</label>
               <input 
                 id="background" 
                 className="input-background" 

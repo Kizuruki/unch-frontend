@@ -2,12 +2,30 @@
 
 import { useEffect, useState } from "react";
 import "./page.css";
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import { useUser } from "../../../contexts/UserContext";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
-  const [isWaiting, setIsWaiting] = useState(false)
+  const router = useRouter();
+  const [isWaiting, setIsWaiting] = useState(true)
   const [sessionId, setSessionId] = useState(null)
+  const {
+    sonolusUser,
+    session,
+    isSessionValid,
+    clearExpiredSession,
+    isClient,
+    sessionReady,
+  } = useUser();
+  useEffect(() => {
+    if (!sessionReady) return;
+
+    if (sonolusUser && isSessionValid()) {
+      router.push("/dashboard");
+    } else {
+      setIsWaiting(false);
+    }
+  }, [sessionReady, sonolusUser, isSessionValid, router]);
 
   const sonolusServerUrl = process.env['NEXT_PUBLIC_SONOLUS_SERVER_URL'];
   const apiUrl = process.env['NEXT_PUBLIC_API_URL'];
@@ -45,7 +63,7 @@ export default function Login() {
         window.dispatchEvent(new CustomEvent('authChange'))
 
         setIsWaiting(false)
-        redirect("/dashboard")
+        router.push("/dashboard");
       } else if (res.status === 404) {
         console.error("expired")
         setIsWaiting(false)
@@ -60,7 +78,7 @@ export default function Login() {
       <div className="login-container">
         <div className="login-box">
           <h1>UntitledCharts</h1>
-          {isWaiting ? (<p>Waiting...</p>) : (<>
+          {isWaiting ? (<p>Waiting for server response...</p>) : (<>
             <form onSubmit={onSubmit}>
 
               {/* <label htmlFor="email">Email</label>

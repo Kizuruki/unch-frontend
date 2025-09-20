@@ -5,10 +5,12 @@ import ChartsList from "../../components/charts-list/ChartsList";
 import PaginationControls from "../../components/pagination-controls/PaginationControls";
 import ChartModal from "../../components/chart-modal/ChartModal";
 import { useUser } from "../../contexts/UserContext";
+import { useRouter } from "next/navigation";
 
 const APILink = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Dashboard() {
+  const router = useRouter();
   const {
     sonolusUser,
     session,
@@ -17,6 +19,11 @@ export default function Dashboard() {
     isClient,
     sessionReady,
   } = useUser();
+  useEffect(() => {
+    if (sessionReady && (!sonolusUser || !isSessionValid())) {
+      router.push("/login");
+    }
+  }, [sessionReady, sonolusUser, isSessionValid, router]);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -121,7 +128,8 @@ export default function Dashboard() {
           : "",
         backgroundUrl: item.background_file_hash
           ? `${BASE}/${item.author}/${item.id}/${item.background_file_hash}`
-          : `${BASE}/${item.author}/${item.id}/background_v3_file_hash`,
+          : `${BASE}/${item.author}/${item.id}/${item.background_v3_file_hash}`,
+        has_bg: item.background_file_hash ? true : false,
         chartUrl: item.chart_file_hash
           ? `${BASE}/${item.author}/${item.id}/${item.chart_file_hash}`
           : "",

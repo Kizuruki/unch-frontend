@@ -137,7 +137,7 @@ export default function ChartModal({
                 id="bgm" 
                 className="input-bgm" 
                 type="file" 
-                accept="audio/mp3" 
+                accept="audio/mp3, audio/mpeg"  
                 onChange={onUpdate("bgm")} 
               />
               {editData && editData.bgmUrl && !form.bgm && (
@@ -180,7 +180,7 @@ export default function ChartModal({
                 id="preview" 
                 className="input-preview" 
                 type="file" 
-                accept="audio/mp3" 
+                accept="audio/mp3, audio/mpeg"  
                 onChange={onUpdate("preview")} 
               />
               {editData && editData.previewUrl && !form.preview && (
@@ -292,12 +292,12 @@ export default function ChartModal({
                 placeholder="tag1, tag2, tag3"
               />
 
-              <label className="label-jacket" htmlFor="jacket">Cover Image (png):</label>
+              <label className="label-jacket" htmlFor="jacket">Cover Image:</label>
               <input 
                 id="jacket" 
                 className="input-jacket" 
                 type="file" 
-                accept="image/png" 
+                accept="image/png,image/jpeg,image/jp2,image/avif,image/x-icon,image/icns"
                 onChange={onUpdate("jacket")} 
                 required
               />
@@ -307,7 +307,7 @@ export default function ChartModal({
                 id="bgm" 
                 className="input-bgm" 
                 type="file" 
-                accept="audio/mp3" 
+                accept="audio/mp3, audio/mpeg"  
                 onChange={onUpdate("bgm")} 
                 required
               />
@@ -326,11 +326,11 @@ export default function ChartModal({
                 id="preview" 
                 className="input-preview" 
                 type="file" 
-                accept="audio/mp3" 
+                accept="audio/mp3, audio/mpeg"  
                 onChange={onUpdate("preview")} 
               />
 
-              <label className="label-background" htmlFor="background">Background Image (optional png):</label>
+              <label className="label-background" htmlFor="background">Background Image (optional png only):</label>
               <input 
                 id="background" 
                 className="input-background" 

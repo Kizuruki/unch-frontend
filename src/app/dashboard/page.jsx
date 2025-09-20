@@ -116,6 +116,7 @@ export default function Dashboard() {
         title: item.title,
         artists: item.artists,
         author: item.author_full,
+        author_field: item.chart_design, // NOTE: used for edit, since we don't want to upload the #... handle.
         authorId: item.author,
         rating: item.rating,
         description: item.description,

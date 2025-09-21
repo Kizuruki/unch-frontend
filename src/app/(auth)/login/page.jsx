@@ -35,7 +35,7 @@ export default function Login() {
     e.preventDefault();
     setIsWaiting(true); // Set to waiting when the user clicks
     try {
-      const { id } = await (await fetch(`${apiUrl}/api/accounts/session/external/id`, { method: "POST" })).json();
+      const { id } = await (await fetch(`${apiUrl}/api/accounts/session/external/id/`, { method: "POST" })).json();
       const [_proto, host] = sonolusServerUrl.split("://");
 
       // Set the external login ID
@@ -53,7 +53,7 @@ export default function Login() {
     if (!isWaiting || !externalLoginId) return;
 
     const interval = setInterval(async () => {
-      const res = await fetch(`${apiUrl}/api/accounts/session/external/get?id=${externalLoginId}`);
+      const res = await fetch(`${apiUrl}/api/accounts/session/external/get/?id=${externalLoginId}`);
 
       if (res.status === 202) {
         const { session_key, expiry } = await res.json();
@@ -82,7 +82,7 @@ export default function Login() {
           <h1>UntitledCharts</h1>
           {isWaiting ? (
             <div>
-              <p>Waiting for authentication response...</p>
+              <p>Waiting for authentication response... Don't close this page!</p>
               {externalLoginId && ( // Only show the button if externalLoginId is not null
                 <button
                   onClick={() => {

@@ -46,7 +46,7 @@ export function UserProvider({ children }) {
       setSession(sessionValue);
       
       try {
-        const me = await fetch(`${APILink}/api/accounts/session/external/account`, {
+        const me = await fetch(`${APILink}/api/accounts/session/account/`, {
           headers: {
             "Authorization": `${sessionValue}`
           }
@@ -73,6 +73,8 @@ export function UserProvider({ children }) {
           const meData = await me.json();
           console.log(meData);
           
+          // TODO: we shouldn't need this anymore
+          // meData now includes sonolus_username
           try {
             const targetUrl = `https://service.sonolus.com/users/handle/${meData.sonolus_handle}`;
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;

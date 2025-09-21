@@ -49,7 +49,7 @@ export default function ChartsList({
           }}
         >
           <Link
-            href={`/levels?id=${encodeURIComponent(post.id)}`}
+            href={`/levels/UnCh-${encodeURIComponent(post.id)}`}
             target="_blank"
             rel="noopener noreferrer"
           >

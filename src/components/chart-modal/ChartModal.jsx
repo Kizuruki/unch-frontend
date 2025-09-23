@@ -98,12 +98,12 @@ export default function ChartModal({
               />
 
               <label className="label-description" htmlFor="description">Description (max 1000 chars):</label>
-              <input 
+              <textarea 
                 id="description" 
                 className="input-description" 
-                type="text" 
                 value={form.description} 
                 onChange={onUpdate("description")} 
+                rows="7"
                 maxLength={1000}
               />
 
@@ -277,7 +277,7 @@ export default function ChartModal({
                 className="input-description" 
                 value={form.description} 
                 onChange={onUpdate("description")} 
-                rows="5"
+                rows="7"
                 maxLength={1000}
                 placeholder="Optional description..."
               />

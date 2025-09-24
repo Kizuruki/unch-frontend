@@ -299,13 +299,13 @@ export default function Dashboard() {
         setLoading(false);
         return;
       }
-      if (form.author && form.author.length > 20) {
-        setError("Chart Designer must be 20 characters or less.");
+      if (form.author && form.author.length > 50) {
+        setError("Charter Name must be 50 characters or less.");
         setLoading(false);
         return;
       }
-      if (form.description && form.description.length > 200) {
-        setError("Description must be 200 characters or less.");
+      if (form.description && form.description.length > 1000) {
+        setError("Description must be 1000 characters or less.");
         setLoading(false);
         return;
       }

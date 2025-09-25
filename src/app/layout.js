@@ -120,7 +120,7 @@ export default function RootLayout({ children }) {
           <footer>
             <div className="footer-left"></div>
             <div className="footer-center">
-            <span>Connect using the server link "https://sonolus.untitledcharts.com"</span>
+            <span>Connect using the server link "https://untitledcharts.com"</span>
             </div>
             <div className="footer-right">
             <ul>

@@ -493,8 +493,8 @@ export default function Dashboard() {
         setLoading(false);
         return;
       }
-      if (form.author.length > 20) {
-        setError("Chart Designer must be 20 characters or less.");
+      if (form.author.length > 50) {
+        setError("Charter Name must be 50 characters or less.");
         setLoading(false);
         return;
       }

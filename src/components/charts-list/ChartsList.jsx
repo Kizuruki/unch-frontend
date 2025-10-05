@@ -33,7 +33,7 @@ export default function ChartsList({
     <ul className="songlist">
       {posts.map((post) => {
           const canSeeVisibilityChange = sonolusUser &&
-                sonolusUser.id === post.authorId &&
+                sonolusUser.sonolus_id === post.authorId &&
                 post.status &&
                 onVisibilityChange;
         return <li
@@ -96,7 +96,7 @@ export default function ChartsList({
 
             <div className="metadata-section">
               <div className="chart-actions">
-                {sonolusUser && sonolusUser.id === post.authorId && (
+                {sonolusUser && sonolusUser.sonolus_id === post.authorId && (
                   <>
                     <button
                       className="edit-btn"

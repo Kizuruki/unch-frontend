@@ -60,25 +60,17 @@ function HeaderContent() {
               onClick={() => setShowDropdown(!showDropdown)}
             >
               <div className="user-avatar">
-                {sonolusUser.avatarType === 'default' ? (
                   <div 
                     className="default-avatar"
                     style={{
-                      backgroundColor: sonolusUser.avatarBackgroundColor,
-                      color: sonolusUser.avatarForegroundColor
+                      backgroundColor: "#000020ff",
+                      color: "#ffffffff"
                     }}
                   >
-                    {sonolusUser.name.charAt(0).toUpperCase()}
+                    {sonolusUser.sonolus_username.charAt(0).toUpperCase()}
                   </div>
-                ) : (
-                  <img 
-                    src={`https://service.sonolus.com/users/${sonolusUser.id}/avatar`} 
-                    alt={sonolusUser.name}
-                    className="user-avatar-img"
-                  />
-                )}
               </div>
-              <span className="user-name">{sonolusUser.name}</span>
+              <span className="user-name">{sonolusUser.sonolus_username}</span>
               <span className="dropdown-arrow">▼</span>
             </div>
             {showDropdown && (

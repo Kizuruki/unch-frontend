@@ -72,32 +72,7 @@ export function UserProvider({ children }) {
           // API call succeeded, process the response
           const meData = await me.json();
           console.log(meData);
-          
-          // TODO: we shouldn't need this anymore
-          // meData now includes sonolus_username
-          try {
-            const targetUrl = `https://service.sonolus.com/users/handle/${meData.sonolus_handle}`;
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-            const proxyResponse = await fetch(proxyUrl);
-            
-            if (proxyResponse.ok) {
-              const proxyData = await proxyResponse.json();
-              const sonolusData = JSON.parse(proxyData.contents);
-              console.log('Sonolus data:', sonolusData);
-              setSonolusUser(sonolusData);
-            } else {
-              console.log('AllOrigins failed, trying CORS Anywhere...');
-              const fallbackUrl = `https://cors-anywhere.herokuapp.com/${targetUrl}`;
-              const fallbackResponse = await fetch(fallbackUrl);
-              if (fallbackResponse.ok) {
-                const sonolusData = await fallbackResponse.json();
-                console.log('Sonolus data (via CORS Anywhere):', sonolusData);
-                setSonolusUser(sonolusData);
-              }
-            }
-          } catch (error) {
-            console.log('Error fetching Sonolus data:', error);
-          }
+          setSonolusUser(meData);
         }
 
       } catch (error) {

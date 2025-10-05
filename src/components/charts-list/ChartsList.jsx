@@ -32,10 +32,9 @@ export default function ChartsList({
   return (
     <ul className="songlist">
       {posts.map((post) => {
-          const canSeeVisibilityChange = sonolusUser &&
-                sonolusUser.sonolus_id === post.authorId &&
-                post.status &&
-                onVisibilityChange;
+          const canSeeVisibilityChange = 
+          (sonolusUser && sonolusUser.sonolus_id === post.authorId && post.status && onVisibilityChange) ||
+          (sonolusUser && sonolusUser.mod === true);
         return <li
           key={post.id}
           className="dashboard-li"

@@ -91,8 +91,8 @@ export default function ChartModal({
                 className="input-rating" 
                 type="number" 
                 inputMode="numeric" 
-                max={99}
-                min={0}
+                max={999}
+                min={-999}
                 value={form.rating} 
                 onChange={onUpdate("rating")} 
               />
@@ -266,8 +266,8 @@ export default function ChartModal({
                 inputMode="numeric" 
                 value={form.rating} 
                 onChange={onUpdate("rating")} 
-                min={0}
-                max={99}
+                min={-999}
+                max={999}
                 required
               />
 

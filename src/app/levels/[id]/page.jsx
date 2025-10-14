@@ -38,7 +38,7 @@ export async function generateMetadata({ params }) {
     return { title: 'Level not found' };
   }
 
-  const ogDescription = `Charted by ${level.author}.\n${level.description}`;
+  const ogDescription = level.description;
   const twitterText = `Play ${level.title} now on UntitledCharts!\nLevel ${level.rating} charted by ${level.author}`;
 
   return {
@@ -47,7 +47,8 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: `[${level.rating}] ${level.title}`,
       description: ogDescription,
-      images: level.thumbnail ? [{ url: level.thumbnail, width: 512, height: 512 }] : [],
+      site_name: `UntitledCharts - ${level.author}`,
+      images: level.thumbnail ? [{ url: level.thumbnail }] : [],
     },
     twitter: {
       card: 'summary_large_image',

@@ -48,7 +48,7 @@ export async function generateMetadata({ params }) {
       title: `[${level.rating}] ${level.title}`,
       description: ogDescription,
       site_name: `UntitledCharts - ${level.author}`,
-      images: level.thumbnail ? [{ url: level.thumbnail }] : [],
+      images: level.thumbnail ? [{ url: level.thumbnail, width: 50, height: 50  }] : [],
     },
     twitter: {
       card: 'summary_large_image',
